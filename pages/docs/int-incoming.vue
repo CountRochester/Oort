@@ -1,0 +1,465 @@
+<template>
+  <v-data-table
+    :headers="headers"
+    :items="showingItems"
+    :search="search"
+    :footer-props="{
+      itemsPerPageText: 'Записей на странице',
+      itemsPerPageAllText: 'все',
+      itemsPerPageOptions: [20, 50, 100]
+    }"
+    :loading="busy"
+    multi-sort
+    show-expand
+    loading-text="Загрузка"
+    locale="ru-RU"
+    class="elevation-1"
+    @click:row="viewItem"
+  >
+    <template #item.incNumber="{ item }">
+      <v-icon v-if="item.needAnswer && !item.answersId.length" color="red">
+        mdi-exclamation-thick
+      </v-icon>
+      {{ item.incNumber }}
+    </template>
+
+    <template #expanded-item="{headers, item}">
+      <td :colspan="headers.length">
+        <v-expansion-panels
+          accordion
+          popout
+          focusable
+        >
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              <strong>Кому адресовано или отписано</strong>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-list>
+                <v-list-item v-for="(el, i) in item.Addressees" :key="i">
+                  <v-list-item-content>
+                    {{ el ? el.posName : 'Неизвестный исполнитель' }}
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <v-expansion-panel>
+            <v-expansion-panel-header>
+              <strong>Темы</strong>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-list>
+                <v-list-item v-for="(el, j) in item.Temas" :key="j">
+                  <v-list-item-content>
+                    {{ el ? el.name : 'Неизвестная тема' }}
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <v-list-item v-if="item.needAnswer && !item.answersId.length">
+            <v-icon color="red">
+              mdi-exclamation-thick
+            </v-icon>
+            <h3 class="pl-5">
+              Требуется ответ
+            </h3>
+          </v-list-item>
+
+          <v-expansion-panel v-if="item.answersId.length">
+            <v-expansion-panel-header>
+              <strong>Ответ</strong>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-list>
+                <v-list-item
+                  v-for="(el, k) in item.answersId"
+                  :key="k"
+                  @click="viewIntOut(el)"
+                >
+                  <v-list-item-content>
+                    {{ item.answers.length ? item.answers[k] : null }}
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </td>
+    </template>
+
+    <template #top>
+      <tableToolbar
+        ref="tableToolbar"
+        :default-item="defaultItem"
+        :reset="reset"
+        :new-item="editItem"
+      />
+      <editIntInc
+        ref="editForm"
+        :lazy-form="lazy"
+        :initialize="initialize"
+      />
+      <!-- ---------------------------------------------------------------------------------------------------------------- -->
+      <!-- -------------------------------------------Диалог просмотра документа------------------------------------------- -->
+      <!-- ---------------------------------------------------------------------------------------------------------------- -->
+      <viewIntInc ref="viewDialog" :edited-item-id="editedItem.Id" />
+      <viewIntOut ref="viewOutDialog" />
+    </template>
+
+    <template #item.action="{ item }">
+      <td @click.stop>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-icon :disabled="busy" small class="mr-2" v-on="on" @click="editItem(item)">
+              mdi-pencil
+            </v-icon>
+          </template>
+          <span>Редактирование</span>
+        </v-tooltip>
+        <v-icon v-if="checkPermiss(16)" :disabled="busy" small @click="deleteItem(item)">
+          mdi-delete
+        </v-icon>
+      </td>
+    </template>
+
+    <template #item.podpisants="{ item }">
+      <v-list-item v-for="podp in item.Podpisants" :key="podp.id" dense class="pl-0 ml-n2">
+        <v-icon small>
+          mdi-google-street-view
+        </v-icon>
+        <span class="pl-1">
+          {{ podp ? podp.employee : '' }}
+        </span>
+        <span class="pl-1">
+          {{ podp ? `(${podp.department})` : '' }}
+        </span>
+      </v-list-item>
+    </template>
+
+    <template #item.temas="{ item }">
+      <v-list-item v-for="tema1 in item.Temas" :key="tema1.id" dense class="pl-0 ml-n2">
+        <v-icon small>
+          mdi-label
+        </v-icon>
+        <span class="pl-1">
+          {{ tema1 ? tema1.name : '' }}
+        </span>
+      </v-list-item>
+    </template>
+
+    <template #item.dateVx="{ item }">
+      {{ item.incDate }}
+    </template>
+
+    <template #item.dateIsh="{ item }">
+      {{ item.extDate }}
+    </template>
+
+    <template #no-data>
+      <v-btn :disabled="busy" :color="theme.mainTheme.primary" @click="initialize">
+        Сбросить
+      </v-btn>
+    </template>
+  </v-data-table>
+</template>
+
+<script>
+/* eslint-disable no-useless-escape */
+import { mapGetters, mapActions } from 'vuex'
+import moment from 'moment'
+import { filter } from '@/utils/filter'
+import viewIntOut from '@/components/view-int-outgoing'
+import Rules from '@/utils/rules'
+import Messenger from '@/utils/messenger'
+import { checkUserPermission } from '@/utils/permission'
+import { gQLRequestMessage } from '@/utils/gql-request'
+import { dateConvert, getFormatedDate } from '@/utils/date.js'
+import viewIntInc from '@/components/view-int-incoming'
+import { IntIncoming } from '@/Storage/ent-methods/int-incomings'
+import editIntInc from '@/components/edit-int-incoming'
+import tableToolbar from '@/components/table-toolbar'
+
+moment.locale('ru')
+
+export default {
+  components: {
+    viewIntInc,
+    viewIntOut,
+    tableToolbar,
+    editIntInc
+  },
+  data () {
+    return {
+      // --------------------------------Общие-----------------------------------
+      storage: this.$docs.buffer,
+      messenger: Messenger.getInstance(),
+      rules: Rules,
+      headers: [
+        {
+          text: 'Входящий №',
+          align: 'left',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 120,
+          value: 'incNumber'
+        },
+        {
+          text: 'Дата вх.',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 100,
+          value: 'dateVx'
+        },
+        {
+          text: 'Краткое содержание',
+          sortable: false,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 300,
+          value: 'subject'
+        },
+        {
+          text: 'От кого',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 300,
+          value: 'podpisants'
+        },
+        {
+          text: 'Исходящий №',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 100,
+          value: 'extNumberWithPrefix'
+        },
+        {
+          text: 'Дата исх.',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 100,
+          value: 'dateIsh'
+        },
+        {
+          text: 'Состояние',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 160,
+          value: 'state'
+        },
+        // {
+        //   text: 'Тема',
+        //   sortable: true,
+        //   class: 'font-weight-medium subtitle-1',
+        //   divider: true,
+        //   width: 250,
+        //   value: 'temas'
+        // },
+        {
+          text: 'Имеется ли ответ',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 160,
+          value: 'answers'
+        },
+        {
+          text: 'Действия',
+          sortable: false,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 80,
+          value: 'action'
+        }
+      ],
+      editedIndex: -1,
+      defaultItem: new IntIncoming(),
+      editedItem: new IntIncoming(),
+      // -------------------Диалог добавления/редактирования---------------------
+      lazy: false,
+      editForm: null
+    }
+  },
+
+  computed: {
+    search: {
+      get () {
+        return this.$store.state.navInterface.search
+      },
+      set (newVal) {
+        this.setSearch(newVal)
+      }
+    },
+    busy: {
+      get () {
+        return this.$store.state.navInterface.busy
+      },
+      set (newVal) {
+        if (newVal === true) {
+          this.setBusy()
+        } else if (newVal === false) {
+          this.unsetBusy()
+        }
+      }
+    },
+    selectDep () {
+      if (this.tableBody) {
+        return this.tableBody.selectDep
+      } else { return null }
+    },
+    extDate: {
+      get () {
+        const val = this.editedItem ? this.editedItem.extDate || new Date().toISOString().substr(0, 10) : new Date().toISOString().substr(0, 10)
+        return dateConvert(val)
+      },
+      set (val) {
+        this.editedItem.extDate = dateConvert(val)
+      }
+    },
+    showingItems () {
+      return filter(this.intIncomings)
+    },
+    intIncomings () {
+      return this.getter('intIncomings', 'items')
+    },
+    ...mapGetters({
+      user: 'auth/getUser',
+      usersDep: 'auth/getUserDep',
+      selectedDep: 'auth/getSelectDep',
+      userPermission: 'auth/getUserPermission',
+      theme: 'navInterface/getTheme'
+    })
+  },
+
+  async mounted () {
+    await this.initialize()
+    this.$emit('ready')
+  },
+
+  methods: {
+    getter (ent, type) {
+      if (!this.storage) { return [] }
+      if (this.storage[ent].synchronization) { return [] }
+      return this.storage[ent][type]
+    },
+    checkPermiss (val) {
+      return checkUserPermission(this.userPermission, val)
+    },
+    formatDate (val) {
+      return getFormatedDate(val)
+    },
+    ...mapActions({
+      setDep: 'auth/selectDep',
+      setEditedItemId: 'navInterface/setEditedItemId',
+      setBusy: 'navInterface/setBusy',
+      unsetBusy: 'navInterface/unsetBusy'
+    }),
+
+    async viewIntOut (id) {
+      await this.$refs.viewOutDialog.viewItem(id)
+    },
+
+    async initialize () {
+      try {
+        this.busy = true
+        if (!this.storage.intIncomings.items.length || !this.storage.intIncFiles.items.length) {
+          // await Promise.all([
+          //   this.storage.intIncomings.updateAll(),
+          //   this.storage.intIncFiles.updateAll()
+          // ])
+          await this.$docs.updateEntitys(['intIncomings', 'intIncFiles'])
+        }
+        this.$refs.editForm.newState = null
+        this.$refs.editForm.podpisantsDeps = []
+        this.$refs.editForm.addresseeDeps = []
+        this.busy = false
+      } catch (err) {
+        throw err
+      }
+    },
+
+    async reset () {
+      try {
+        if (this.selectedDep !== this.selectDep && this.selectDep) {
+          this.setDep(this.selectDep)
+        }
+        console.time('Reset')
+        this.busy = true
+        // await Promise.all([
+        //   this.storage.intIncomings.updateAll(),
+        //   this.storage.intIncFiles.updateAll(),
+        //   this.storage.resolutions.updateAll(),
+        //   this.storage.currentPositions.updateAll(),
+        //   this.storage.temas.updateAll(),
+        //   this.storage.states.updateAll(),
+        //   this.storage.types.updateAll(),
+        //   this.storage.employees.updateAll(),
+        //   this.storage.departments.updateAll()
+        // ])
+        await this.$docs.updateEntitys([
+          'intIncomings',
+          'intIncFiles',
+          'resolutions',
+          'currentPositions',
+          'temas',
+          'states',
+          'types',
+          'employees',
+          'departments'
+        ])
+        this.$refs.editForm.newState = null
+        this.$refs.editForm.podpisantsDeps = []
+        this.$refs.editForm.addresseeDeps = []
+        console.timeEnd('Reset')
+        this.busy = false
+      } catch (err) {
+        throw err
+      }
+    },
+
+    editItem (item) {
+      this.editedIndex = item.id || -1
+      this.editedItem = this.editedIndex >= 0
+        ? this.storage.intIncomings.indexed[item.id].clone()
+        : new IntIncoming()
+      this.$refs.editForm.open(this.editedItem)
+    },
+
+    viewItem (item) {
+      if (this.$refs.viewDialog) {
+        this.$refs.viewDialog.viewItem(item.id)
+      }
+    },
+
+    async deleteItem (item) {
+      const query = `
+        mutation {
+          deleteIntIncoming (id: ${item.id}) {
+            type
+            id
+            text
+            messageType
+          }
+        }
+      `
+      this.busy = true
+      confirm(
+        `Вы уверены, что хотите удалить документ с исх. ${item.intNumber} от ${getFormatedDate(item.intDate)}?`
+      ) && (await gQLRequestMessage(this, query))
+      this.busy = false
+      await this.initialize()
+    }
+    // ------------------------------------------------------------------------------------------------------
+  },
+  middleware: ['auth']
+}
+</script>
