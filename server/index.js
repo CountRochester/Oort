@@ -1,13 +1,16 @@
 // Корневой файл сервера
 // ----------------------------------------------
 // Подключение модулей
-const http = require('http')
-const { ApolloServer } = require('apollo-server-express')
+// const http = require('http')
+// const { ApolloServer } = require('apollo-server-express')
+const path = require('path')
+const { ApolloServer } = require('apollo-server-fastify')
+
 const { execute, subscribe } = require('graphql')
 const { SubscriptionServer } = require('subscriptions-transport-ws')
 const { makeExecutableSchema } = require('graphql-tools')
 const consola = require('consola')
-const { Nuxt, Builder } = require('nuxt')
+// const { Nuxt, Builder } = require('nuxt')
 // ----------------------------------------------
 const config = require('../nuxt.config.js')
 const schema = require('./graphql/schema')
@@ -38,47 +41,91 @@ const apolloServer = new ApolloServer({
   playground: true
 })
 
-apolloServer.applyMiddleware({ app })
+// apolloServer.applyMiddleware({ app })
+
+app.register(require('fastify-vue-plugin'), {
+  config,
+  attachProperties: ['session'] // Attach properties from the fastify request object to the nuxt request object. Example use case: Attach session store to nuxt context.
+}).after((e) => {
+  if (e) { console.trace(e) }
+  app.nuxt('/')
+})
+const staticDir = path.join(__dirname, '../', 'static')
+console.log(staticDir)
+app.register(require('fastify-static'), {
+  root: staticDir,
+  prefix: '/' // optional: default '/'
+})
 
 // Функция запуска сервера
 async function start () {
   // Инициализация Nuxt.js
-  const nuxt = new Nuxt(config)
-  const { host, port } = nuxt.options.server
+  // const nuxt = new Nuxt(config)
+  // const { host, port } = nuxt.options.server
   // ----------------------------------------------
   // Сборка только для режима разработчика
-  if (config.dev) {
-    const builder = new Builder(nuxt)
-    await builder.build()
-  } else {
-    await nuxt.ready()
-  }
+  // if (config.dev) {
+  //   const builder = new Builder(nuxt)
+  //   await builder.build()
+  // } else {
+  //   await nuxt.ready()
+  // }
   // ----------------------------------------------
   // Подключение middleware
-  app.use(nuxt.render)
+  // app.use(nuxt.render)
   // ----------------------------------------------
-  const server = http.createServer(app)
+  // const server = http.createServer(app)
   // Запуск сервера
+  // ----------------------------------------------
+  
+
+  // const server = new ApolloServer({
+  //   typeDefs: schema,
+  //   resolvers: apolloRes
+  // })
+
+  app.register(apolloServer.createHandler({
+    path: '/graphql'
+  }))
+
+  await app.listen(3000, (e) => {
+    if (e) { console.trace(e) }
+    console.warn('Server started OK')
+  })
+
+  const subscriptionServer = SubscriptionServer.create(
+    {
+      schema,
+      execute,
+      subscribe
+    },
+    {
+      server: app.server,
+      path: '/graphql'
+    }
+  )
+
+
   const connections = new Map()
 
-  server.listen(port, host, () => {
-    const subscriptionServer = new SubscriptionServer(
-      {
-        schema: Schema,
-        execute,
-        subscribe
-      },
-      {
-        server,
-        path: '/graphql'
-      }
-    )
-    consola.ready({
-      message: `Сервер запущен на http://${host}:${port}`,
-      badge: true
-    })
-  })
-  server.on('connection', (socket) => {
+  // server.listen(port, host, () => {
+  //   const subscriptionServer = new SubscriptionServer(
+  //     {
+  //       schema: Schema,
+  //       execute,
+  //       subscribe
+  //     },
+  //     {
+  //       server,
+  //       path: '/graphql'
+  //     }
+  //   )
+  //   consola.ready({
+  //     message: `Сервер запущен на http://${host}:${port}`,
+  //     badge: true
+  //   })
+  // })
+  app.server.on('connection', (socket) => {
     const key = `${socket.remoteAddress}:${socket.remotePort} (${socket.remoteFamily})`
     connections.set(key, socket)
     socket.on('close', () => {

@@ -21,9 +21,11 @@ const fileMiddleware = require('./middleware/file')
 const upload = require('./routes/upload')
 // const SessionStore = require('./session-store/session-store')(session.Store)
 const SessionStore = require('./session-store/session-store')
+const fastify = require('fastify')
 
 // ----------------------------------------------
-const app = express()
+// const app = express()
+const app = fastify()
 
 // function extendDefaultFields (defaults, session) {
 //   return {
@@ -98,17 +100,19 @@ const sessionConfig = session({
 // ----------------------------------------------
 // Подключение middleware
 // app.use(session(sessionOptions))
-app.use(sessionConfig)
-app.use(fileMiddleware.any())
-app.use(passport.initialize())
-passport.use(passportStrategy)
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+
+// app.use(sessionConfig)
+// app.use(fileMiddleware.any())
+// app.use(passport.initialize())
+// passport.use(passportStrategy)
+// app.use(bodyParser.urlencoded({ extended: true }))
+// app.use(bodyParser.json())
+
 // app.use('/graphql', authGQL)
 
 // ----------------------------------------------
 // Регистрация роутов
-app.use('/upload', upload)
+// app.use('/upload', upload)
 
 // ----------------------------------------------
 dbAuth.sync()

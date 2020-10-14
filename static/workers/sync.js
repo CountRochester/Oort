@@ -1,5 +1,5 @@
-// const HOSTNAME = '192.168.40.63'
-// const PORT = '80'
+const HOSTNAME = '192.168.40.63'
+const PORT = '80'
 
 async function gQLRequest (query) {
   try {
