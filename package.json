@@ -30,6 +30,8 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "fastify": "^3.6.0",
+    "fastify-cookie": "^4.1.0",
+    "fastify-session": "^5.2.0",
     "fastify-static": "^3.2.1",
     "fastify-vue-plugin": "^1.4.0",
     "graphql": "^15.3.0",

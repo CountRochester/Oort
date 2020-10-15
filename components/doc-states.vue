@@ -246,7 +246,9 @@ export default {
       this.reset()
       switch (this.type) {
         case 'ExtInc': {
+          console.log('itemId', itemId)
           this.editedItem = itemId ? this.extIncoming[itemId] : this.storeItem
+          console.log('this.editedItem', this.editedItem)
           if (this.states.length) {
             this.currentState = this.states.find(el => el.name === this.editedItem.state)
           }
@@ -292,6 +294,7 @@ export default {
         }
       }
       // определение первоначального состояния
+      console.log('this.editedItem', this.editedItem)
 
       if (this.currentState) {
         if (this.states.length && this.currentState.id !== 0) {

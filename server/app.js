@@ -10,6 +10,10 @@ const consola = require('consola')
 const passport = require('passport')
 const bcrypt = require('bcrypt')
 
+const fastify = require('fastify')
+const fastifySession = require('fastify-session')
+const fastifyCookie = require('fastify-cookie')
+
 const passportStrategy = require('./middleware/passport-strategy')
 const Auth = require('./models/auth')
 const keys = require('./keys')
@@ -21,19 +25,19 @@ const fileMiddleware = require('./middleware/file')
 const upload = require('./routes/upload')
 // const SessionStore = require('./session-store/session-store')(session.Store)
 const SessionStore = require('./session-store/session-store')
-const fastify = require('fastify')
+
 
 // ----------------------------------------------
 // const app = express()
 const app = fastify()
 
-// function extendDefaultFields (defaults, session) {
-//   return {
-//     data: defaults.data,
-//     expires: defaults.expires,
-//     UserId: session.userId
-//   }
-// }
+function extendDefaultFields (defaults, session) {
+  return {
+    data: defaults.data,
+    expires: defaults.expires,
+    UserId: session.userId
+  }
+}
 
 async function userInit () {
   try {
@@ -100,6 +104,16 @@ const sessionConfig = session({
 // ----------------------------------------------
 // Подключение middleware
 // app.use(session(sessionOptions))
+// app.register(sessionConfig)
+
+// app.register(fastifyFormbody)
+app.register(fastifyCookie)
+app.register(fastifySession, {
+  cookieName: 'sessionId',
+  secret: keys.SESSION_KEY + keys.SESSION_KEY,
+  cookie: { secure: false },
+  expires: 4 * 60 * 60 * 1000
+})
 
 // app.use(sessionConfig)
 // app.use(fileMiddleware.any())

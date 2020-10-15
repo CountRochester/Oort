@@ -5,7 +5,6 @@
 // const { ApolloServer } = require('apollo-server-express')
 const path = require('path')
 const { ApolloServer } = require('apollo-server-fastify')
-
 const { execute, subscribe } = require('graphql')
 const { SubscriptionServer } = require('subscriptions-transport-ws')
 const { makeExecutableSchema } = require('graphql-tools')
@@ -29,17 +28,19 @@ const Schema = makeExecutableSchema({
   typeDefs: schema,
   resolvers: apolloRes
 })
-// console.log(schema.raw)
 Object.assign(Schema._typeMap.TimeStamp, timeStamp)
 Object.assign(Schema._typeMap.Time, time)
 Object.assign(Schema._typeMap.Date, date)
 
 const apolloServer = new ApolloServer({
   schema: Schema,
-  context: ({ req, res }) => ({ req, res }),
+  context: ({ request, reply }) => ({ req: request, res: reply }),
   introspection: true,
   playground: true
 })
+app.register(apolloServer.createHandler({
+  path: '/graphql'
+}))
 
 // apolloServer.applyMiddleware({ app })
 
@@ -59,35 +60,6 @@ app.register(require('fastify-static'), {
 
 // Функция запуска сервера
 async function start () {
-  // Инициализация Nuxt.js
-  // const nuxt = new Nuxt(config)
-  // const { host, port } = nuxt.options.server
-  // ----------------------------------------------
-  // Сборка только для режима разработчика
-  // if (config.dev) {
-  //   const builder = new Builder(nuxt)
-  //   await builder.build()
-  // } else {
-  //   await nuxt.ready()
-  // }
-  // ----------------------------------------------
-  // Подключение middleware
-  // app.use(nuxt.render)
-  // ----------------------------------------------
-  // const server = http.createServer(app)
-  // Запуск сервера
-  // ----------------------------------------------
-  
-
-  // const server = new ApolloServer({
-  //   typeDefs: schema,
-  //   resolvers: apolloRes
-  // })
-
-  app.register(apolloServer.createHandler({
-    path: '/graphql'
-  }))
-
   await app.listen(3000, (e) => {
     if (e) { console.trace(e) }
     console.warn('Server started OK')
@@ -95,7 +67,7 @@ async function start () {
 
   const subscriptionServer = SubscriptionServer.create(
     {
-      schema,
+      schema: Schema,
       execute,
       subscribe
     },
@@ -105,26 +77,7 @@ async function start () {
     }
   )
 
-
   const connections = new Map()
-
-  // server.listen(port, host, () => {
-  //   const subscriptionServer = new SubscriptionServer(
-  //     {
-  //       schema: Schema,
-  //       execute,
-  //       subscribe
-  //     },
-  //     {
-  //       server,
-  //       path: '/graphql'
-  //     }
-  //   )
-  //   consola.ready({
-  //     message: `Сервер запущен на http://${host}:${port}`,
-  //     badge: true
-  //   })
-  // })
   app.server.on('connection', (socket) => {
     const key = `${socket.remoteAddress}:${socket.remotePort} (${socket.remoteFamily})`
     connections.set(key, socket)
