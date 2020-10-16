@@ -1,15 +1,12 @@
 // Корневой файл сервера
 // ----------------------------------------------
 // Подключение модулей
-// const http = require('http')
-// const { ApolloServer } = require('apollo-server-express')
 const path = require('path')
 const { ApolloServer } = require('apollo-server-fastify')
 const { execute, subscribe } = require('graphql')
 const { SubscriptionServer } = require('subscriptions-transport-ws')
 const { makeExecutableSchema } = require('graphql-tools')
 const consola = require('consola')
-// const { Nuxt, Builder } = require('nuxt')
 // ----------------------------------------------
 const config = require('../nuxt.config.js')
 const schema = require('./graphql/schema')
@@ -42,8 +39,6 @@ app.register(apolloServer.createHandler({
   path: '/graphql'
 }))
 
-// apolloServer.applyMiddleware({ app })
-
 app.register(require('fastify-vue-plugin'), {
   config,
   attachProperties: ['session'] // Attach properties from the fastify request object to the nuxt request object. Example use case: Attach session store to nuxt context.
@@ -52,10 +47,9 @@ app.register(require('fastify-vue-plugin'), {
   app.nuxt('/')
 })
 const staticDir = path.join(__dirname, '../', 'static')
-console.log(staticDir)
 app.register(require('fastify-static'), {
   root: staticDir,
-  prefix: '/' // optional: default '/'
+  prefix: '/'
 })
 
 // Функция запуска сервера
@@ -79,6 +73,7 @@ async function start () {
 
   const connections = new Map()
   app.server.on('connection', (socket) => {
+    console.log(socket)
     const key = `${socket.remoteAddress}:${socket.remotePort} (${socket.remoteFamily})`
     connections.set(key, socket)
     socket.on('close', () => {

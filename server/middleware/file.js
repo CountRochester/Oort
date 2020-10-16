@@ -1,12 +1,13 @@
-const multer = require('multer')
+// const multer = require('multer')
+const multer = require('fastify-multer')
 const { v1: uuidv1 } = require('uuid')
 // const keys = require('../keys')
 
 const storage = multer.diskStorage({
-  destination (req, file, cb) {
+  destination (request, file, cb) {
     cb(null, 'static/file-storage/upload')
   },
-  filename (req, file, cb) {
+  filename (request, file, cb) {
     cb(null, uuidv1() + '-' + file.originalname)
   }
 })
@@ -30,7 +31,7 @@ const allowedTypes = [
   'application/x-rar-compressed'
 ]
 
-const fileFilter = (req, file, cb) => {
+const fileFilter = (request, file, cb) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true)
   } else {

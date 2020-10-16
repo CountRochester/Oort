@@ -1,18 +1,11 @@
-// Серверное приложение
-// ----------------------------------------------
-// Подключение модулей
-const express = require('express')
-const bodyParser = require('body-parser')
-const session = require('express-session')
 const consola = require('consola')
-
-// const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const passport = require('passport')
 const bcrypt = require('bcrypt')
 
 const fastify = require('fastify')
 const fastifySession = require('fastify-session')
 const fastifyCookie = require('fastify-cookie')
+const multer = require('fastify-multer')
 
 const passportStrategy = require('./middleware/passport-strategy')
 const Auth = require('./models/auth')
@@ -21,14 +14,10 @@ const dbAuth = require('./db/auth')
 const dbDocs = require('./db/docs')
 const dbOld = require('./db/old')
 const fileMiddleware = require('./middleware/file')
-// const authGQL = require('./middleware/auth')
-const upload = require('./routes/upload')
-// const SessionStore = require('./session-store/session-store')(session.Store)
-const SessionStore = require('./session-store/session-store')
-
+const fileHandler = require('./routes/upload')
+// const SessionStore = require('./session-store/session-store')
 
 // ----------------------------------------------
-// const app = express()
 const app = fastify()
 
 function extendDefaultFields (defaults, session) {
@@ -62,51 +51,8 @@ async function userInit () {
   }
 }
 
-// const sessionOptions = {
-//   secret: keys.SESSION_KEY,
-//   resave: false,
-//   saveUninitialized: false,
-//   proxy: false,
-//   checkExpirationInterval: 30 * 60 * 1000,
-//   expiration: 4 * 60 * 60 * 1000,
-//   store: new SequelizeStore({
-//     db: dbAuth,
-//     table: 'Session',
-//     tableName: 'Session',
-//     extendDefaultFields
-//   })
-// }
-// const sessionConfig = session({
-//   secret: keys.SESSION_KEY,
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: {
-//     secure: false,
-//     maxAge: 4 * 60 * 60 * 1000,
-//     store: new SessionStore({
-//       db: dbAuth,
-//       table: 'Session',
-//       tableName: 'Session',
-//       extendDefaultFields
-//     })
-//   }
-// })
-const sessionConfig = session({
-  secret: keys.SESSION_KEY,
-  resave: false,
-  saveUninitialized: false,
-  store: SessionStore,
-  cookie: {
-    secure: false,
-    maxAge: 4 * 60 * 60 * 1000
-  }
-})
 // ----------------------------------------------
 // Подключение middleware
-// app.use(session(sessionOptions))
-// app.register(sessionConfig)
-
-// app.register(fastifyFormbody)
 app.register(fastifyCookie)
 app.register(fastifySession, {
   cookieName: 'sessionId',
@@ -115,18 +61,18 @@ app.register(fastifySession, {
   expires: 4 * 60 * 60 * 1000
 })
 
-// app.use(sessionConfig)
 // app.use(fileMiddleware.any())
-// app.use(passport.initialize())
-// passport.use(passportStrategy)
-// app.use(bodyParser.urlencoded({ extended: true }))
-// app.use(bodyParser.json())
-
-// app.use('/graphql', authGQL)
-
+app.register(passport.initialize())
+passport.use(passportStrategy)
 // ----------------------------------------------
 // Регистрация роутов
-// app.use('/upload', upload)
+app.register(multer.contentParser)
+app.route({
+  method: 'POST',
+  url: '/upload',
+  preHandler: fileMiddleware.any(),
+  handler: fileHandler
+})
 
 // ----------------------------------------------
 dbAuth.sync()

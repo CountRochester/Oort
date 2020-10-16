@@ -63,33 +63,6 @@
             </v-menu>
           </v-tab>
         </v-tabs>
-        <!-- Элементы в категории -->
-        <!-- <v-tabs
-          grow
-          center-active
-          background-color="secondary"
-          color="white"
-          height="40"
-          dark
-        >
-          <v-tabs-slider color="white" />
-          <v-tab
-            v-for="tab in items"
-            :key="tab.title"
-            :href="tab.ref"
-            @click="selectTab(tab)"
-          >
-            <v-col cols="1">
-              <v-icon>
-                {{ tab.icon }}
-              </v-icon>
-            </v-col>
-            <v-col cols="11">
-              {{ tab.title }}
-            </v-col>
-          </v-tab>
-        </v-tabs> -->
-
         <!-- eslint-disable-next-line vue/require-component-is -->
         <component :is="selectedComponent" />
       </v-container>

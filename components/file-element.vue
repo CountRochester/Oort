@@ -131,9 +131,8 @@
 
 <script>
 /* eslint-disable no-useless-escape */
-import { mapActions } from 'vuex'
-import Docs from '@/Storage/docs'
 
+import { mapActions } from 'vuex'
 import { gQLRequestMessage } from '@/utils/gql-request'
 import { fileSend } from '@/utils/file'
 import keys from '@/server/keys'
@@ -165,8 +164,7 @@ export default {
   },
   data () {
     return {
-      storage: null,
-      busy: false,
+      storage: this.$docs.buffer,
       loading: false,
       // --------------------------------Общие-----------------------------------
       fileStorageUpload: keys.UPLOAD_STORAGE, //          '/file-storage/upload/',
@@ -181,20 +179,18 @@ export default {
     }
   },
   computed: {
-    // ...mapState('docs', {
-    //   extIncFiles: 'extIncFiles',
-    //   extOutFiles: 'extOutFiles',
-    //   intIncFiles: 'intIncFiles',
-    //   intOutFiles: 'intOutFiles',
-    //   internalFiles: 'internalFiles'
-    // }),
-    // ...mapGetters({
-    //   extIncFile: 'docs/getExtIncFileById',
-    //   extOutFile: 'docs/getExtOutFileById',
-    //   intIncFile: 'docs/getIntIncFileById',
-    //   intOutFile: 'docs/getIntOutFileById',
-    //   internalFile: 'docs/getInternalFileById'
-    // }),
+    busy: {
+      get () {
+        return this.$store.state.navInterface.busy
+      },
+      set (newVal) {
+        if (newVal === true) {
+          this.setBusy()
+        } else if (newVal === false) {
+          this.unsetBusy()
+        }
+      }
+    },
     extIncFiles () {
       return this.storage ? this.storage.extIncFiles.items : []
     },
@@ -230,25 +226,22 @@ export default {
     }
   },
   async created () {
-    const docs = await Docs.getInstance()
-    this.storage = await docs.buffer
-    console.log('File element OK')
     await this.initialize()
   },
   // async mounted () {
   // },
   methods: {
     ...mapActions({
-      fetchForce: 'fetchForce',
-      fetch: 'fetch'
+      setBusy: 'navInterface/setBusy',
+      unsetBusy: 'navInterface/unsetBusy'
     }),
     async reset () {
       this.busy = true
       if (this.uploadedFiles.length) {
         for (const file of this.uploadedFiles) {
           this.filesIdToDelete.push(file.id)
-          await this.deleteFiles()
         }
+        await this.deleteFiles()
       }
       this.busy = false
       this.uploadedFiles = []
@@ -256,44 +249,30 @@ export default {
     },
     async initialize () {
       try {
-        console.time('File-element init')
         this.busy = true
-        // await Promise.all([
-        //   this.fetch('ExtIncFiles'),
-        //   this.fetch('ExtOutFiles'),
-        //   this.fetch('IntIncFiles'),
-        //   this.fetch('IntOutFiles'),
-        //   this.fetch('InternalFiles')
-        // ])
         switch (this.filesType) {
           case 'ExtInc': {
-            // await this.fetch('ExtIncFiles')
             await this.storage.extIncFiles.updateAll()
             break
           }
           case 'ExtOut': {
             await this.storage.extOutFiles.updateAll()
-            // await this.fetch('ExtOutFiles')
             break
           }
           case 'IntInc': {
             await this.storage.intIncFiles.updateAll()
-            // await this.fetch('IntIncFiles')
             break
           }
           case 'IntOut': {
             await this.storage.intOutFiles.updateAll()
-            // await this.fetch('IntOutFiles')
             break
           }
           case 'Internal': {
             await this.storage.internalFiles.updateAll()
-            // await this.fetch('InternalFiles')
             break
           }
         }
         this.busy = false
-        console.timeEnd('File-element init')
       } catch (err) {
         throw err
       }

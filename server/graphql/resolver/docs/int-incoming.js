@@ -424,6 +424,7 @@ async function getIntIncomingRequestData (idArr) {
         ]
       }
     ]
+    // raw: true
   })
   return output
 }
@@ -843,6 +844,7 @@ async function getRequest (key, { id }) {
     const IntIncomingRequests = []
     // console.time('First fetch id')
     // Определение всех id внутренних входящих документов в отделе
+    console.time('First fetch')
     const ids = await Docs.IntIncoming.findAll({
       attributes: ['id'],
       include: [
@@ -859,11 +861,14 @@ async function getRequest (key, { id }) {
         }
       ]
     })
+    console.timeEnd('First fetch')
     // преобразование результата в массив
     const fetchedIds = Object.values(JSON.parse(JSON.stringify(ids, null, 2))).reduce((acc, item, index) => { acc[index] = item.id; return acc }, [])
+    console.time('Second fetch')
     const output = await getIntIncomingRequestData(fetchedIds)
+    console.timeEnd('Second fetch')
     for (let i = 0; i < output.length; i++) {
-      const item = output[i].dataValues
+      const item = output[i]
       IntIncomingRequests[i] = formIntIncomingRequest(item, id)
     }
     console.timeEnd('Fetching IntIncoming')
