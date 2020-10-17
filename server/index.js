@@ -12,7 +12,7 @@ const config = require('../nuxt.config.js')
 const schema = require('./graphql/schema')
 const { timeStamp, time, date } = require('./graphql/types')
 const apolloRes = require('./graphql/resolver/apollo-resolver')
-// const keys = require('./keys')
+const keys = require('./keys')
 
 // Импорт настроек и установка их в Nuxt.js
 config.dev = process.env.NODE_ENV !== 'production'
@@ -59,7 +59,7 @@ app.register(require('fastify-static'), {
 
 // Функция запуска сервера
 async function start () {
-  await app.listen(3000, (e) => {
+  await app.listen(keys.APP_PORT, keys.APP_HOST, (e) => {
     if (e) { console.trace(e) }
     consola.warn('Server started OK')
   })

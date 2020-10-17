@@ -7,19 +7,22 @@ import allEentititys from './entititys'
 import { createItemsArray } from './items-array'
 import WorkerWrapper from './worker-wrapper'
 
+const ITEM_COUNT = 50
+
 async function formElements (entity, arr) {
   let formedArr = []
-  const tempArr = []
+  let tmp
   if (entity.form) {
     for (let i = 0; i < arr.length; i++) {
-      tempArr.push(new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(entity.form(arr[i]))
-        }, 0)
-      }))
-    }
-    for await (const elem of tempArr) {
-      formedArr.push(await elem)
+      if (!(i % ITEM_COUNT)) {
+        tmp = new Promise((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 0)
+        })
+        await tmp
+      }
+      formedArr[i] = entity.form(arr[i])
     }
   } else { formedArr = arr }
   return createItemsArray(entity.entitity, formedArr)
