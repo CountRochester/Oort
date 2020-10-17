@@ -15,6 +15,7 @@
                   <doc-states
                     ref="viewState"
                     :edited-item-id="editedItemId"
+                    :store-item="editedItem"
                     @loaded="loadState"
                   />
                 </v-col>

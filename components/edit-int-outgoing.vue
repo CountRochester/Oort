@@ -24,6 +24,7 @@
                   v-if="editedItem.state"
                   ref="editState"
                   :edited-item-id="editedItem.id"
+                  :store-item="editedItem"
                   type="IntOut"
                   :editable="checkPermiss(8)"
                   @loaded="loadState"

@@ -15,8 +15,10 @@
                 <v-col cols="12" sm="3" md="3" class="py-0 my-n3">
                   <doc-states
                     v-if="editedItem ? editedItem.state : null"
+                    id="viewState"
                     ref="viewState"
                     :edited-item-id="editedItem.id"
+                    :store-item="editedItem"
                     type="IntOut"
                     @loaded="loadState"
                   />
@@ -242,7 +244,7 @@ export default {
         }
         if (this.$refs.viewState) {
           this.$refs.viewState.resetForce()
-          this.$refs.viewState.init(itemId)
+          await this.$refs.viewState.init(itemId)
           this.$refs.viewState.prepareItemData(itemId)
         }
         this.viewDialog = true

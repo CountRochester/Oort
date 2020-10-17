@@ -387,19 +387,6 @@ export default {
     async reset () {
       try {
         this.busy = true
-        // await Promise.all([
-        //   this.storage.intIncomings.updateAll(),
-        //   this.storage.intOutgoings.updateAll(),
-        //   this.storage.intIncFiles.updateAll(),
-        //   this.storage.intOutFiles.updateAll(),
-        //   this.storage.resolutions.updateAll(),
-        //   this.storage.currentPositions.updateAll(),
-        //   this.storage.temas.updateAll(),
-        //   this.storage.states.updateAll(),
-        //   this.storage.types.updateAll(),
-        //   this.storage.employees.updateAll(),
-        //   this.storage.departments.updateAll()
-        // ])
         await this.$docs.updateEntitys([
           'intIncomings',
           'intOutgoings',
@@ -432,6 +419,7 @@ export default {
     },
 
     viewItem (item) {
+      console.log('int-outgoing', item)
       if (this.$refs.viewDialog) {
         this.$refs.viewDialog.viewItem(item.id)
       }

@@ -15,6 +15,7 @@
                   <doc-states
                     ref="viewState"
                     :edited-item-id="editedItem.id"
+                    :store-item="editedItem"
                     type="Internal"
                     @loaded="loadState"
                   />

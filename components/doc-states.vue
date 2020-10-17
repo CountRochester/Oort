@@ -85,8 +85,6 @@ export default {
         parentStateId: null,
         updatedAt: ''
       },
-      // statesNameArray: [],
-      // statesIdArray: [],
       currentStateIdInArray: [],
       editedItem: {},
       statesArray: [],
@@ -154,13 +152,21 @@ export default {
     },
 
     currentIncNumber () {
-      return this.storeItem.incNumber
+      return this.storeItem ? this.storeItem.incNumber : ''
     },
     currentRes () {
-      return this.storeItem.resolutions.length
+      return this.storeItem
+        ? this.storeItem.resolutions
+          ? this.storeItem.resolutions.length
+          : 0
+        : 0
     },
     completeRes () {
-      return this.storeItem.Resolutions.every(res => res.complete)
+      return this.storeItem
+        ? this.storeItem.Resolutions
+          ? this.storeItem.Resolutions.every(res => res.complete)
+          : []
+        : []
     }
   },
   watch: {
@@ -190,7 +196,6 @@ export default {
     this.reset()
     this.editedItem = null
   },
-
   async mounted () {
     this.count = 0
     this.prepareState()
@@ -217,8 +222,6 @@ export default {
         parentStateId: null,
         updatedAt: ''
       }
-      // this.statesNameArray = []
-      // this.statesIdArray = []
       this.statesArray = []
       this.currentStateIdInArray = []
       const currentEntity = this.entitys.find(el => el.type === this.type).entity
@@ -229,7 +232,7 @@ export default {
       this.reset()
       this.states = []
       this.currentState = {}
-      this.editedItem = null
+      this.editedItem = {}
     },
     // -------------------Состояния---------------------------------------------------------------------
     prepareState () {

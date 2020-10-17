@@ -372,10 +372,6 @@ export default {
       try {
         this.busy = true
         if (!this.storage.intIncomings.items.length || !this.storage.intIncFiles.items.length) {
-          // await Promise.all([
-          //   this.storage.intIncomings.updateAll(),
-          //   this.storage.intIncFiles.updateAll()
-          // ])
           await this.$docs.updateEntitys(['intIncomings', 'intIncFiles'])
         }
         this.$refs.editForm.newState = null
@@ -394,17 +390,6 @@ export default {
         }
         console.time('Reset')
         this.busy = true
-        // await Promise.all([
-        //   this.storage.intIncomings.updateAll(),
-        //   this.storage.intIncFiles.updateAll(),
-        //   this.storage.resolutions.updateAll(),
-        //   this.storage.currentPositions.updateAll(),
-        //   this.storage.temas.updateAll(),
-        //   this.storage.states.updateAll(),
-        //   this.storage.types.updateAll(),
-        //   this.storage.employees.updateAll(),
-        //   this.storage.departments.updateAll()
-        // ])
         await this.$docs.updateEntitys([
           'intIncomings',
           'intIncFiles',

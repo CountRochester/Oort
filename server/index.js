@@ -29,9 +29,14 @@ Object.assign(Schema._typeMap.TimeStamp, timeStamp)
 Object.assign(Schema._typeMap.Time, time)
 Object.assign(Schema._typeMap.Date, date)
 
+app.register(require('fastify-circuit-breaker'))
+
 const apolloServer = new ApolloServer({
   schema: Schema,
-  context: ({ request, reply }) => ({ req: request, res: reply }),
+  context: async ({ request, reply }) => {
+    await app.circuitBreaker()
+    return { req: request, res: reply }
+  },
   introspection: true,
   playground: true
 })
@@ -56,7 +61,7 @@ app.register(require('fastify-static'), {
 async function start () {
   await app.listen(3000, (e) => {
     if (e) { console.trace(e) }
-    console.warn('Server started OK')
+    consola.warn('Server started OK')
   })
 
   const subscriptionServer = SubscriptionServer.create(
@@ -73,14 +78,12 @@ async function start () {
 
   const connections = new Map()
   app.server.on('connection', (socket) => {
-    console.log(socket)
     const key = `${socket.remoteAddress}:${socket.remotePort} (${socket.remoteFamily})`
     connections.set(key, socket)
     socket.on('close', () => {
       connections.delete(key)
-      console.log(`Соединение ${key} закрыто.`)
+      consola.info(`Соединение ${key} закрыто.`)
     })
-    console.log(connections.keys())
   })
 }
 // ----------------------------------------------
