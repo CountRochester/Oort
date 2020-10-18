@@ -59,7 +59,7 @@ app.register(require('fastify-static'), {
 
 // Функция запуска сервера
 async function start () {
-  await app.listen(keys.APP_PORT, keys.APP_HOST, (e) => {
+  await app.listen(keys.APP_PORT, (e) => {
     if (e) { console.trace(e) }
     consola.warn('Server started OK')
   })
