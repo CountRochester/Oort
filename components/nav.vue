@@ -94,7 +94,7 @@
         color="rgba(0, 0, 0, 0)"
         tile
         depressed
-        to="#"
+        to="/auth/user"
         class="mr-10 font-weight-regular text-capitalize"
         @click.stop
         @mouseenter="accountHover = true"

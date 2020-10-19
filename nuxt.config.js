@@ -40,7 +40,8 @@ module.exports = {
     EXT_OUT_FILE_STORAGE: process.env.EXT_OUT_FILE_STORAGE || '/file-storage/ext-out',
     INT_INC_FILE_STORAGE: process.env.INT_INC_FILE_STORAGE || '/file-storage/int-inc',
     INT_OUT_FILE_STORAGE: process.env.INT_OUT_FILE_STORAGE || '/file-storage/int-out',
-    INTERNAL_FILE_STORAGE: process.env.INTERNAL_FILE_STORAGE || '/file-storage/int'
+    INTERNAL_FILE_STORAGE: process.env.INTERNAL_FILE_STORAGE || '/file-storage/int',
+    AVATAR_STORAGE: process.env.AVATAR_STORAGE || '/file-storage/avatars'
   },
   /*
   ** Plugins to load before mounting the App

@@ -1,10 +1,13 @@
 /* eslint-disable no-useless-escape */
+const fs = require('fs')
+const path = require('path')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const _ = require('lodash')
 const moment = require('moment')
 const Sequelize = require('sequelize')
 const Op = Sequelize.Op
+const pubsub = require('../pubsub').getInstance()
 
 const Auth = require('../../models/auth')
 const Docs = require('../../models/docs')
@@ -21,6 +24,7 @@ const getUsers = async (id) => {
       'id',
       'name',
       'employeeId',
+      'avatar',
       'createdAt',
       'updatedAt'
     ],
@@ -29,10 +33,6 @@ const getUsers = async (id) => {
         model: Auth.Group,
         attributes: [
           'id'
-          // 'name',
-          // 'permissions',
-          // 'createdAt',
-          // 'updatedAt'
         ],
         through: {
           attributes: []
@@ -119,13 +119,68 @@ const formUser = (item, employees) => {
     departmentsId: employee?.departmentsId || [],
     subdivisionsId: employee?.subdivisionsId || [],
     groupsId,
+    avatar: item.avatar,
     createdAt: moment(item.createdAt),
     updatedAt: moment(item.updatedAt)
   }
 }
 
+const addAvatar = async (avatar, userName) => {
+  const filename = avatar.split('.')
+  const message = { messageType: 'success' }
+  let fileExtention
+  if (filename.length > 1) {
+    fileExtention = filename[filename.length - 1]
+  } else {
+    fileExtention = ''
+  }
+  let moveOK = true
+  const newFileName = `avatar-${userName}.${fileExtention}`
+  await fs.rename(path.join(keys.STATIC_DIR, keys.UPLOAD_STORAGE, avatar),
+    path.join(keys.STATIC_DIR, keys.AVATAR_STORAGE, newFileName),
+    (err) => {
+      if (err) {
+        message.text += `Ошибка при прикреплении файла ${avatar}: ${err}`
+        message.messageType = 'error'
+        moveOK = false
+      }
+    })
+  if (moveOK) {
+    message.text += `Прикрепление файла ${avatar} успешно \n\r`
+    message.avatar = newFileName
+  }
+  return message
+}
+
+const deleteAvatarUpoad = async (fileName) => {
+  const message = {}
+  await fs.unlink(path.join(keys.STATIC_DIR, keys.UPLOAD_STORAGE, fileName), (err) => {
+    if (err) {
+      message.text += `Файл ${fileName}, ошибка: ${err}\n\r`
+      message.messageType = 'error'
+    }
+  })
+  return message
+}
+
+const deleteAvatar = async (avatar) => {
+  const message = {}
+  await fs.unlink(path.join(keys.STATIC_DIR, keys.AVATAR_STORAGE, avatar), async (err) => {
+    if (err) {
+      const uplMess = await deleteAvatarUpoad(avatar)
+      if (uplMess.messageType === 'error') {
+        message.text = uplMess.text
+        message.messageType = uplMess.messageType
+      }
+    } else {
+      message.text = `Файл ${avatar} успешно удалён`
+    }
+  })
+  return message
+}
+
 module.exports = {
-  async addUser (root, { user: { name, password, employeeId } }) {
+  async addUser (root, { user: { name, password, employeeId, avatar } }) {
     try {
       const iName = _.trim(_.replace(name, /[\[\]&{}<>#$%^*!@+\/\\`~]+/g, ''))
       const iPassword = _.trim(_.replace(password, /[\'\"\[\ \~]+/g, ''))
@@ -146,26 +201,35 @@ module.exports = {
         }
         return message
       } else {
+        const message = { type: 'addUser', messageType: 'success' }
         const salt = await bcrypt.genSalt(10)
-        let newUser
-        if (employeeId) {
-          newUser = await Auth.User.create({
+        let fileMess
+        if (avatar) {
+          fileMess = await addAvatar(avatar, name)
+        }
+        if (!avatar || fileMess.messageType === 'success') {
+          const newUser = await Auth.User.create({
             name: iName,
             password: await bcrypt.hash(iPassword, salt),
-            employeeId
+            employeeId,
+            avatar: fileMess.avatar
+          })
+          message.text = 'Пользователь успешно добавлен'
+          message.id = newUser.id
+          message.item = JSON.stringify({ user: { name, password, employeeId, avatar: fileMess.avatar || avatar } })
+          const employees = await formEmployees([candidate.employeeId])
+          const user = formUser(candidate, employees)
+          pubsub.publish('USER_CHANGED', {
+            userChanged: {
+              type: 'add',
+              id: newUser.id,
+              item: user
+            }
           })
         } else {
-          newUser = await Auth.User.create({
-            name: iName,
-            password: await bcrypt.hash(iPassword, salt)
-          })
-        }
-        const message = {
-          type: 'addUser',
-          text: 'Пользователь успешно добавлен',
-          messageType: 'success',
-          id: newUser.id,
-          item: JSON.stringify({ user: { name, password, employeeId } })
+          message.messageType = 'error'
+          message.text = fileMess.text
+          await deleteAvatarUpoad(avatar)
         }
         return message
       }
@@ -179,7 +243,7 @@ module.exports = {
     }
   },
 
-  async editUser (root, { id, user: { name, password, employeeId } }, context) {
+  async editUser (root, { id, user: { name, password, employeeId, avatar } }, context) {
     try {
       const candidate = await Auth.User.findByPk(id)
       const iName = _.trim(_.replace(name, /[\[\]&{}<>#$%^*!@+\/\\`~]+/g, ''))
@@ -200,6 +264,7 @@ module.exports = {
         }
         return message
       } else {
+        const storedAvatar = candidate.avatar
         if (iPassword === '') {
           // Если пароль пустой, то изменяется только имя
           candidate.name = iName
@@ -211,13 +276,49 @@ module.exports = {
             candidate.employeeId = employeeId
           }
         }
+        let fileMess
+        if ((avatar && !storedAvatar)) {
+          // добавление аватара
+          fileMess = await addAvatar(avatar, candidate.name)
+          if (fileMess.messageType === 'error') {
+            await deleteAvatarUpoad(avatar)
+          } else {
+            candidate.avatar = fileMess.avatar
+          }
+        } else if (!avatar && storedAvatar) {
+          // Удаление аватара
+          fileMess = await deleteAvatar(storedAvatar)
+          candidate.avatar = null
+        } else if (storedAvatar && avatar && (avatar !== storedAvatar)) {
+          // Редактирование аватара
+          await deleteAvatar(storedAvatar)
+          fileMess = await addAvatar(avatar, candidate.name)
+          if (fileMess.messageType === 'error') {
+            await deleteAvatarUpoad(avatar)
+          } else {
+            candidate.avatar = fileMess.avatar
+          }
+        }
         await candidate.save()
         const message = {
           type: 'editUser',
           text: 'Пользователь успешно изменён',
           messageType: 'success',
           id,
-          item: JSON.stringify({ user: { name, password, employeeId } })
+          item: JSON.stringify({ user: { name, password, employeeId, avatar } })
+        }
+        const employees = await formEmployees([candidate.employeeId])
+        const user = formUser(candidate, employees)
+        pubsub.publish('USER_CHANGED', {
+          userChanged: {
+            type: 'edit',
+            id: candidate.id,
+            item: user
+          }
+        })
+        if (fileMess.messageType === 'error') {
+          message.messageType = 'error'
+          message.text = fileMess.text
         }
         return message
       }
@@ -260,7 +361,7 @@ module.exports = {
             messageType: 'error',
             token: null
           }
-		  req.session.save((err) => {
+          req.session.save((err) => {
             if (err) {
               console.log(`Ошибка: ${err}`)
             }
@@ -313,6 +414,9 @@ module.exports = {
   async deleteUser (root, { id }) {
     try {
       const candidate = await Auth.User.findByPk(id)
+      if (candidate.avatar) {
+        await deleteAvatar(candidate.avatar)
+      }
       candidate.destroy()
       const message = {
         type: 'deleteUser',
@@ -320,6 +424,12 @@ module.exports = {
         messageType: 'success',
         id
       }
+      pubsub.publish('USER_CHANGED', {
+        userChanged: {
+          type: 'delete',
+          id
+        }
+      })
       return message
     } catch (err) {
       const message = {

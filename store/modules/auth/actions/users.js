@@ -4,6 +4,18 @@ import moment from 'moment'
 import { gQLRequest } from '@/utils/gql-request'
 import { removeDublicates } from '@/utils/array'
 
+function formUser (item, rootGetters) {
+  const groupNames = []
+  for (const group of item.groupsId) {
+    const gr = rootGetters['auth/getGroupById'][group]
+    if (gr) {
+      groupNames.push(gr.name)
+    }
+  }
+  item.groups = groupNames.join('; ')
+  item.employee = `${item.secondName || ''} ${item.firstName[0] || ''}.${item.middleName[0] || ''}.`
+}
+
 moment.locale('ru')
 export default {
   async setUser ({ commit, state, dispatch, rootState, rootGetters }, userId) {
@@ -85,6 +97,7 @@ export default {
               departmentsId
               subdivisionsId
               groupsId
+              avatar
               createdAt
               updatedAt
             }
@@ -93,15 +106,7 @@ export default {
       const users = await gQLRequest(query)
       for (let index = 0; index < users.length; index++) {
         const item = users[index]
-        const groupNames = []
-        for (const group of item.groupsId) {
-          const gr = rootGetters['auth/getGroupById'][group]
-          if (gr) {
-            groupNames.push(gr.name)
-          }
-        }
-        item.groups = groupNames.join('; ')
-        item.employee = `${item.secondName || ''} ${item.firstName[0] || ''}.${item.middleName[0] || ''}.`
+        formUser(item, rootGetters)
       }
       const sorted = removeDublicates(users)
       commit('set', ['users', sorted])
@@ -121,9 +126,29 @@ export default {
       //   updatedAt
       //   groups
       //   employee
+      //   avatar
       // }
     } catch (err) {
       throw err
     }
+  },
+
+  addUser ({ state, rootGetters, commit }, item) {
+    formUser(item, rootGetters)
+    const newArr = [...state.users]
+    newArr.push(item)
+    commit('set', ['users', newArr])
+  },
+
+  editUser ({ state, rootGetters, commit }, item) {
+    formUser(item, rootGetters)
+    const newArr = state.users.filter(el => el.id !== item.id)
+    newArr.push(item)
+    commit('set', ['users', newArr])
+  },
+
+  deleteUser ({ state, commit }, id) {
+    const newArr = state.users.filter(el => el.id !== id)
+    commit('set', ['users', newArr])
   }
 }

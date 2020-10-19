@@ -25,6 +25,10 @@ const User = dbAuth.define('User', {
   employeeId: {
     allowNull: true,
     type: Sequelize.INTEGER
+  },
+  avatar: {
+    allowNull: true,
+    type: Sequelize.STRING
   }
 })
 

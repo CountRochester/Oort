@@ -15,6 +15,7 @@
 <script>
 // import subworker from '@/utils/subworker'
 import { mapState } from 'vuex'
+import user from '@/subscriptions/user'
 import navbar from '../components/nav'
 import footerSkb from '../components/footer'
 import leftDrawer from '../components/leftDrawer'
@@ -51,6 +52,9 @@ export default {
         }
       }
     }
+  },
+  apollo: {
+    $subscribe: { ...user }
   },
   mounted () {
     // await this.$store.dispatch('nuxtServerInit')

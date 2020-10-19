@@ -17,7 +17,7 @@
             <h2>Должности</h2>
             <v-spacer />
             <v-btn
-              :disabled="busy"
+              :disabled="busy||(!editable)"
               :color="theme.tables.menuText"
               dark
               class="mb-2"
@@ -30,7 +30,7 @@
         </template>
         <template #item.action="{ item }">
           <v-icon
-            :disabled="busy"
+            :disabled="busy||(!editable)"
             small
             class="mr-2"
             @click="editItem(item)"
@@ -38,7 +38,7 @@
             mdi-pencil
           </v-icon>
           <v-icon
-            :disabled="busy"
+            :disabled="busy||(!editable)"
             small
             @click="delPos(item)"
           >
@@ -199,6 +199,11 @@ export default {
       type: String,
       required: false,
       default: ''
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   data () {

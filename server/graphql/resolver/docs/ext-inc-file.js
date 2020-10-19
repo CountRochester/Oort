@@ -105,7 +105,7 @@ module.exports = {
       const candidate = await Docs.ExtIncFile.findByPk(id)
       const message = {
         type: 'deleteExtIncFile',
-        text: ``,
+        text: '',
         messageType: 'success',
         id
       }
@@ -150,7 +150,7 @@ module.exports = {
     try {
       const message = {
         type: 'deleteExtIncFiles',
-        text: ``,
+        text: '',
         messageType: 'success',
         id: id.join(',')
       }

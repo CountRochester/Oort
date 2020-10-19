@@ -75,7 +75,7 @@ app.route({
 })
 
 // ----------------------------------------------
-dbAuth.sync()
+dbAuth.sync({ alter: true })
 dbAuth
   .authenticate()
   .then(() => {

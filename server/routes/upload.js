@@ -11,9 +11,12 @@ const handler = async (request, reply) => {
     const type = request.files[0].fieldname
     const entity = type[0].toUpperCase() + type.slice(1)
     for (const file of request.files) {
-      const message = await entitys[type][`add${entity}`](null, { [type]: { file: file.filename } })
+      let message
+      if (type !== 'avatar') {
+        message = await entitys[type][`add${entity}`](null, { [type]: { file: file.filename } })
+      }
       response.push({
-        id: message.id,
+        id: message ? message.id : null,
         filename: file.filename,
         originalName: file.originalname,
         path: file.path,

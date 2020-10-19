@@ -10,6 +10,7 @@ module.exports = `
     departmentsId: [ID]
     subdivisionsId: [ID]
     groupsId: [ID]
+    avatar: String
     createdAt: TimeStamp!
     updatedAt: TimeStamp!
   }
@@ -39,8 +40,9 @@ module.exports = `
 
   input UserInput {
     name: String!
-    password: String!
-    employeeId: ID
+    password: String
+    employeeId: ID,
+    avatar: String
   }
 
   input GroupInput {

@@ -100,6 +100,9 @@ module.exports = {
     },
     typeChanged: {
       subscribe: () => pubsub.asyncIterator('TYPE_CHANGED')
+    },
+    userChanged: {
+      subscribe: () => pubsub.asyncIterator('USER_CHANGED')
     }
   },
   Query: {

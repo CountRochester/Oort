@@ -200,6 +200,11 @@ const subscription = `
     id: ID!
     item: Type
   }
+  type userSubs {
+    type: String!
+    id: ID!
+    item: User
+  }
   type ExtIncomingUpdate {
     ExtIncoming: ExtIncomingRequest
     IncNumbers: [IncomingNumber]
@@ -288,6 +293,7 @@ const subscription = `
     subdivisionChanged: subdivisionSubs!
     temaChanged: temaSubs!
     typeChanged: typeSubs!
+    userChanged: userSubs!
   }
 `
 const types = [
