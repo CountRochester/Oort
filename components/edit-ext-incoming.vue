@@ -453,6 +453,7 @@ export default {
     },
     loadState () {
       this.$refs.editState.prepareItemData()
+      console.log('States LOADED!')
       // this.$refs.editState.prepareItemData(this.editedItem.id)
     },
     executantsValid () {

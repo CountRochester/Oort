@@ -329,15 +329,15 @@ export default {
     },
 
     getChangedState () {
-      const state = this.states.find(el => el.name === this.statesNameArray[this.currentStateIdInArray])
+      const state = this.states.find(el => el.name === this.statesArray[this.currentStateIdInArray].name)
       const stateOr = this.states.find(el => el.name === this.editedItem.state)
       const editedState = {
         orderedIndex: this.currentStateIdInArray,
-        name: this.statesNameArray[this.currentStateIdInArray],
+        name: this.statesArray[this.currentStateIdInArray].name,
         id: state ? state.id : null
       }
       const originState = {
-        orderedIndex: stateOr ? this.statesIdArray.findIndex(el => el === stateOr.id) : null,
+        orderedIndex: stateOr ? this.statesArray.findIndex(el => el.id === stateOr.id) : null,
         name: this.editedItem.state,
         id: stateOr ? stateOr.id : null
       }
