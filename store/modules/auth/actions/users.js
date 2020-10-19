@@ -140,11 +140,40 @@ export default {
     commit('set', ['users', newArr])
   },
 
-  editUser ({ state, rootGetters, commit }, item) {
+  editUser ({ rootGetters, commit }, item) {
     formUser(item, rootGetters)
-    const newArr = state.users.filter(el => el.id !== item.id)
-    newArr.push(item)
-    commit('set', ['users', newArr])
+    commit('softEdit', ['users', item])
+  },
+
+  async updateUser ({ state, dispatch, rootGetters, commit }, id) {
+    const userToUpdate = rootGetters['auth/getUserById'][id]
+    if (userToUpdate) {
+      const query = `
+          query {
+            getUser (id: "${id}") {
+              id
+              name
+              employeeId
+              firstName
+              middleName
+              secondName
+              currentPositionsId
+              departmentsId
+              subdivisionsId
+              groupsId
+              avatar
+              createdAt
+              updatedAt
+            }
+          }
+        `
+      const item = await gQLRequest(query)
+      formUser(item, rootGetters)
+      commit('softEdit', ['users', item])
+      if (state.currentUser.id === item.id) {
+        dispatch('setUser', item.id)
+      }
+    }
   },
 
   deleteUser ({ state, commit }, id) {

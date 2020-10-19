@@ -384,6 +384,7 @@ const mutations = {
   addInternalNote: rootResolver.addInternalNote,
   editInternalNote: rootResolver.editInternalNote,
   deleteInternalNote: rootResolver.deleteInternalNote,
+  deleteUploadedFiles: rootResolver.deleteUploadedFiles,
 
   ...allEtityMutations
 }

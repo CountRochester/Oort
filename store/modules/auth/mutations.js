@@ -19,6 +19,17 @@ export function edit (state, [entitity, item]) {
   }
 }
 
+export function softEdit (state, [entitity, item]) {
+  const editedItem = state[entitity].find(el => el.id === item.id)
+  if (editedItem) {
+    for (const key in editedItem) {
+      if (editedItem[key] !== item[key]) {
+        editedItem[key] = item[key]
+      }
+    }
+  }
+}
+
 export function hardEdit (state, [entitity, item]) {
   state[entitity] = state[entitity].filter(el => el.id !== item.id)
   state[`${entitity}`].push(item)

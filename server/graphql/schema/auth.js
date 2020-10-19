@@ -62,5 +62,6 @@ module.exports = `
     removeUsersFromGroup(userId: [ID]! groupId: ID!): Message!
     removeUserFromAllGroups(id: ID!): Message!
     deleteGroup(id: ID!): Message!
+    deleteUploadedFiles(files: [String]!): Message!
   }
 `

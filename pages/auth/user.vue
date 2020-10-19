@@ -14,9 +14,12 @@
                 <v-card
                   height="450"
                   class="mx-auto"
-                  :img="avatarHref"
                 >
                   <v-card-text>
+                    <v-img
+                      :src="avatarHref"
+                      max-height="450"
+                    />
                     <v-icon
                       v-if="!currentUser.avatar && !uploadedFile"
                       x-large
@@ -95,6 +98,8 @@
                   <v-text-field
                     v-model="pass"
                     :disabled="!changePassword"
+                    :rules="[passMinLetters]"
+                    counter
                     label="Пароль"
                     type="password"
                   />
@@ -117,7 +122,7 @@
                 </v-btn>
               </v-col>
             </v-row>
-            <editEmployee ref="editEmpl" />
+            <editEmployee ref="editEmpl" @save="updateUser(user.id)" />
           </v-form>
           <v-card-actions>
             <v-spacer />
@@ -200,31 +205,50 @@ export default {
   },
 
   mounted () {
-    this.setTitle('Данные пользователя')
-    this.editedItem = this.employee[this.user.employee.id].clone()
-    this.changePassword = false
-    this.currentUser = this.getUserById[this.user.id]
-    this.userName = this.currentUser.name
+    this.initialize()
   },
 
   methods: {
     ...mapActions({
       setBusy: 'navInterface/setBusy',
       unsetBusy: 'navInterface/unsetBusy',
-      setTitle: 'navInterface/setTitle'
+      setTitle: 'navInterface/setTitle',
+      updateUser: 'auth/updateUser'
     }),
+    initialize () {
+      this.setTitle('Данные пользователя')
+      this.editedItem = this.employee[this.user.employee.id]
+      this.changePassword = false
+      this.currentUser = this.getUserById[this.user.id]
+      this.userName = this.currentUser.name
+      this.pass = ''
+      this.passRep = ''
+    },
     getter (ent, type) {
       if (!this.storage) { return [] }
       if (this.storage[ent].synchronization) { return [] }
       return this.storage[ent][type]
     },
 
+    passMinLetters (v) {
+      if (!this.changePassword) { return true }
+      return v.length >= 8 || 'Минимум 8 символов'
+    },
+
     checkPass () {
       return this.pass === this.passRep || 'Пароль должен совпадать'
+    },
+    async deleteUploadedFile (files) {
+      const fileNames = files.map(el => `"${el}"`)
+      const query = `mutation { deleteUploadedFiles(files: [${fileNames}]) { messageType } }`
+      await gQLRequestMessage(this, query)
     },
     // TODO Удаление загруженных файлов, если загружают повторно
     async addFile () {
       this.busy = true
+      if (this.uploadedFile) {
+        await this.deleteUploadedFile([this.uploadedFile])
+      }
       const files = await fileSend(this.$refs.filesend)
       this.uploadedFile = files[0]?.filename
       this.$refs.fileInput.clearableCallback()
@@ -239,8 +263,13 @@ export default {
       this.$refs.editEmpl.open(this.editedItem)
     },
 
-    close () {
+    async close () {
       // Удалить загруженные файлы
+      this.busy = true
+      if (this.uploadedFile) {
+        await this.deleteUploadedFile([this.uploadedFile])
+      }
+      this.busy = false
       this.uploadedFile = null
       this.$router.push('/main')
     },
@@ -252,7 +281,9 @@ export default {
       this.busy = true
       const queryAvatar = this.uploadedFile
         ? `avatar: "${this.uploadedFile}"`
-        : ''
+        : this.currentUser.avatar
+          ? `avatar: "${this.currentUser.avatar}"`
+          : ''
       const queryPass = this.passRep
         ? `password: "${this.passRep}"`
         : 'password: ""'
@@ -275,6 +306,7 @@ export default {
       await gQLRequestMessage(this, query)
       this.busy = false
       this.uploadedFile = null
+      this.initialize()
     }
   }
 }

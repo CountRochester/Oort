@@ -97,6 +97,7 @@
                 <currentPosition
                   ref="curPos"
                   :employee-id="editedItem.id"
+                  editable
                 />
               </v-col>
             </v-row>
@@ -345,6 +346,7 @@ export default {
         await gQLRequestMessage(this, query)
       }
       this.busy = false
+      this.$emit('save')
       await this.close()
     }
   }

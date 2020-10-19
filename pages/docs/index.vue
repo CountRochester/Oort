@@ -72,7 +72,7 @@
 
 <script>
 import { mapState, mapActions, mapMutations, mapGetters } from 'vuex'
-import * as subscriptions from '@/subscriptions'
+// import * as subscriptions from '@/subscriptions'
 import { checkUserPermission } from '../../utils/permission'
 
 import Contract from './contract'
@@ -349,9 +349,9 @@ export default {
     }
   },
 
-  apollo: {
-    $subscribe: { ...subscriptions.default }
-  },
+  // apollo: {
+  //   $subscribe: { ...subscriptions.default }
+  // },
 
   mounted () {
     console.log(this)

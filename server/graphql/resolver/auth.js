@@ -53,7 +53,7 @@ const formEmployees = async (ids) => {
     const currentPositionsId = []
     el.CurrentPositions.forEach((el) => {
       currentPositionsId.push(el.id)
-      const currentSubdivId = el.Subdivisions.reduce((acc, item, index) => { acc[index] = item.id.toString(); return acc }, [])
+      const currentSubdivId = el.Subdivisions.reduce((acc, item) => [...acc, item.id.toString()], [])
       subdivisionsId = [...subdivisionsId, ...currentSubdivId]
       departmentsId.push(el.Department.id)
     })
@@ -106,7 +106,7 @@ const getEmployees = async (ids) => {
 }
 
 const formUser = (item, employees) => {
-  const groupsId = item.Groups.reduce((acc, item, index) => { acc[index] = item.id.toString(); return acc }, [])
+  const groupsId = item.Groups.reduce((acc, item) => [...acc, item.id.toString()], [])
   const employee = employees[item.employeeId] || {}
   return {
     id: item.id,
@@ -218,7 +218,8 @@ module.exports = {
           message.id = newUser.id
           message.item = JSON.stringify({ user: { name, password, employeeId, avatar: fileMess.avatar || avatar } })
           const employees = await formEmployees([candidate.employeeId])
-          const user = formUser(candidate, employees)
+          const rawUser = await getUsers(newUser.id)
+          const user = formUser(rawUser, employees)
           pubsub.publish('USER_CHANGED', {
             userChanged: {
               type: 'add',
@@ -308,7 +309,8 @@ module.exports = {
           item: JSON.stringify({ user: { name, password, employeeId, avatar } })
         }
         const employees = await formEmployees([candidate.employeeId])
-        const user = formUser(candidate, employees)
+        const rawUser = await getUsers(candidate.id)
+        const user = formUser(rawUser, employees)
         pubsub.publish('USER_CHANGED', {
           userChanged: {
             type: 'edit',
@@ -392,7 +394,7 @@ module.exports = {
   async getAllUsers () {
     try {
       const users = await getUsers()
-      const employeeIds = users.reduce((acc, item, index) => { acc[index] = item.employeeId; return acc }, [])
+      const employeeIds = users.reduce((acc, item) => [...acc, item.employeeId], [])
       const employees = await formEmployees(employeeIds)
       const output = users.map(el => formUser(el, employees))
       return output
@@ -747,6 +749,25 @@ module.exports = {
         }
       }
       return result
+    } catch (err) {
+      throw err
+    }
+  },
+  async deleteUploadedFiles (root, { files }) {
+    try {
+      const message = {
+        type: 'deleteUploadedFiles',
+        text: 'Все файлы успешно удалены',
+        messageType: 'success'
+      }
+      for (const file of files) {
+        const mes = await deleteAvatarUpoad(file)
+        if (mes.messageType === 'error') {
+          message.messageType = mes.messageType
+          message.text = mes.text
+        }
+      }
+      return message
     } catch (err) {
       throw err
     }
