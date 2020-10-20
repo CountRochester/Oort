@@ -207,24 +207,29 @@ export function formCurrentPositions (element) {
   return new CurrentPosition(element)
 }
 
-export async function addCurrentPosition (instance, item) {
+export async function addCurrentPosition (instance, items) {
   const storage = await common.getStorage(instance)
-  await common.addItem(instance, 'currentPositions', item)
-  await updateEmployeeByAddCurPos(storage, item.id)
+  for (const item of items) {
+    await common.addItem(instance, 'currentPositions', item)
+    await updateEmployeeByAddCurPos(storage, item.id)
+  }
 }
 
-export async function editCurrentPosition (instance, item) {
+export async function editCurrentPosition (instance, items) {
   const storage = await common.getStorage(instance)
-  console.log('Run editCurrentPosition:', item)
-  await common.editItem(instance, 'currentPositions', item)
-  await updateEmployeeByAddCurPos(storage, item.id)
+  for (const item of items) {
+    await common.editItem(instance, 'currentPositions', item)
+    await updateEmployeeByAddCurPos(storage, item.id)
+  }
 }
 
-export async function editCurrentPositions (instance, item) {
+export async function editCurrentPositions (instance, items) {
   const storage = await common.getStorage(instance)
-  console.info('Run editCurrentPositions:', item)
-  await common.edit(instance, 'currentPositions', item)
-  await updateEmployeeByAddCurPos(storage, item.id)
+  for (const item of items) {
+    await common.edit(instance, 'currentPositions', item)
+    await updateEmployeeByAddCurPos(storage, item.id)
+  }
+  // await editCurrentPosition(instance, items)
 }
 
 async function updateRelExtInc (storage, id) {

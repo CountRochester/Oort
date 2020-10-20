@@ -33,6 +33,6 @@ module.exports = `
   type Mutation {
     addCurrentPosition(currentPosition: CurrentPositionInput!): Message!
     editCurrentPosition(id: ID! currentPosition: CurrentPositionInput!): Message!
-    deleteCurrentPosition(id: ID!): Message!
+    deleteCurrentPosition(ids: [ID]!): MessageMult!
   }
 `

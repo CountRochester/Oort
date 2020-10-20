@@ -256,11 +256,11 @@ self.onmessage = async ({ data }) => {
               id.forEach((it) => {
                 arrTodelete.push(stor.delete(it))
               })
-              for await (const it of arrTodelete) {
-                if (it.error) {
-                  throw new Error(`Ошибка удаления элемента id: ${id}: ${it.error}`)
-                }
-              }
+              // for await (const it of arrTodelete) {
+              //   if (it.error) {
+              //     throw new Error(`Ошибка удаления элемента id: ${id}: ${it.error}`)
+              //   }
+              // }
               tr.oncomplete = () => {
                 this.count()
                 console.log(`Удаление из хранилища ${ent.storageName} успешно!`)
@@ -268,6 +268,11 @@ self.onmessage = async ({ data }) => {
               tr.onerror = () => {
                 console.log(tr.error)
                 throw new Error('Ошибка удаления массива элементов из локальной базы')
+              }
+              try {
+                await Promise.all(arrTodelete)
+              } catch (err) {
+                throw new Error(`Ошибка удаления элемента id: ${id}: ${err}`)
               }
             } else {
               const tr = db.transaction(ent.storageName, 'readwrite')

@@ -124,7 +124,6 @@ export class Employee extends NullEmployee {
     email1 = '',
     email2 = '',
     updatedAt = new Date().toISOString().substr(0, 10),
-    // Subdivisions = [],
     Positions = []
   } = {}) {
     super()
@@ -140,9 +139,6 @@ export class Employee extends NullEmployee {
     this.email1 = email1
     this.email2 = email2
     this.updatedAt = updatedAt
-    // this.subdivisionsId = Subdivisions.length
-    //   ? [...Subdivisions]
-    //   : []
     this.positionsId = Positions.length
       ? [...Positions]
       : []
@@ -219,10 +215,28 @@ export async function addEmployee (instance, item) {
 }
 
 export async function editEmployee (instance, item) {
-  await common.editItem(instance, 'employees', item)
+  console.log('editEmployee', item)
+  // await common.editItem(instance, 'employees', item)
+  const storage = await common.getStorage(instance)
+  const editedItem = storage.employees.items.find(el => el.id === item.id)
+  editedItem.firstName = item.firstName
+  editedItem.middleName = item.middleName
+  editedItem.secondName = item.secondName
+  editedItem.secondNameDat = item.secondNameDat
+  editedItem.tabelNumber = item.tabelNumber
+  editedItem.phone1 = item.phone1
+  editedItem.phone2 = item.phone2
+  editedItem.phone3 = item.phone3
+  editedItem.email1 = item.email1
+  editedItem.email2 = item.email2
+  editedItem.updatedAt = item.updatedAt
+  editedItem.positionsId = item.Positions.length
+    ? [...item.Positions]
+    : []
 }
 
 export async function editEmployees (instance, item) {
+  console.log('editEmployees', item)
   await common.edit(instance, 'employees', item)
 }
 

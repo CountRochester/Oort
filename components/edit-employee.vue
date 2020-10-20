@@ -196,6 +196,9 @@ export default {
       if (!item) { return }
       this.editedIndex = item.id || -1
       this.editedItem = item
+      if (this.$refs.curPos) {
+        this.$refs.curPos.initialize(item.id)
+      }
       this.dialog = true
     },
 

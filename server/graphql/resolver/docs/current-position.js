@@ -122,13 +122,13 @@ module.exports = {
           })
         }
         // curPos.SubdivisionId = curPos.SubdivisionId || []
-        const candidateData = await getCurrentPositionData([candidate.id])
+        const candidateData = await getCurrentPositionData([curPos.id])
         const item = formCurrentPosition(candidateData)[0]
         pubsub.publish('CURRENT_POSITION_CHANGED', {
           currentPositionChanged: {
             type: 'add',
-            id: curPos.id,
-            item
+            id: [curPos.id],
+            item: [item]
           }
         })
         return message
@@ -200,8 +200,8 @@ module.exports = {
         pubsub.publish('CURRENT_POSITION_CHANGED', {
           currentPositionChanged: {
             type: 'edit',
-            id: candidate.id,
-            item
+            id: [candidate.id],
+            item: [item]
           }
         })
         return message
@@ -216,20 +216,20 @@ module.exports = {
     }
   },
 
-  async deleteCurrentPosition (root, { id }) {
+  async deleteCurrentPosition (root, { ids }) {
     try {
-      const candidate = await Docs.CurrentPosition.findByPk(id)
-      await candidate.destroy()
+      // const candidate = await Docs.CurrentPosition.findByPk(id)
+      await Docs.CurrentPosition.destroy({ where: { id: { [Op.in]: ids } } })
       const message = {
         type: 'deleteCurrentPosition',
-        text: 'Должность успешно удалена',
+        text: 'Должности успешно удалены',
         messageType: 'success',
-        id
+        id: ids
       }
       pubsub.publish('CURRENT_POSITION_CHANGED', {
         currentPositionChanged: {
           type: 'delete',
-          id
+          id: ids
         }
       })
       return message

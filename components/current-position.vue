@@ -336,7 +336,7 @@ export default {
       unsetBusy: 'navInterface/unsetBusy'
     }),
 
-    async initialize () {
+    async initialize (id) {
       try {
         this.busy = true
         if (!this.storage.currentPositions.items.length || !this.storage.subdivisions.items.length) {
@@ -346,7 +346,7 @@ export default {
           ])
         }
         this.selectedSubdiv = []
-        this.selectedEmployee = this.employee[this.employeeId].clone()
+        this.selectedEmployee = this.employee[id || this.employeeId].clone()
         this.busy = false
       } catch (err) {
         consola.error(err)
@@ -541,20 +541,21 @@ export default {
 
     async deletePositions () {
       if (!this.posToDelete.length) { return }
+      const ids = this.posToDelete.reduce((acc, item) => [...acc, item.id], [])
       this.busy = true
-      for (const item of this.posToDelete) {
-        const query = `
-            mutation {
-              deleteCurrentPosition (id: "${item.id}") {
-                text
-                type
-                id
-                messageType
-              }
+      // for (const item of this.posToDelete) {
+      const query = `
+          mutation {
+            deleteCurrentPosition (ids: [${ids}]) {
+              text
+              type
+              id
+              messageType
             }
-          `
-        await gQLRequestMessage(this, query)
-      }
+          }
+        `
+      await gQLRequestMessage(this, query)
+      // }
       this.posToDelete = []
       this.busy = false
     },

@@ -55,6 +55,14 @@ const core = `
     item: String
   }
 
+  type MessageMult {
+    type: String
+    text: String!
+    messageType: String!
+    id: [ID],
+    item: String
+  }
+
   type AuthMessage {
     type: String
     text: String!
@@ -72,8 +80,8 @@ const subscription = `
   }
   type currentPositionSubs {
     type: String!
-    id: ID!
-    item: CurrentPosition
+    id: [ID]!
+    item: [CurrentPosition]
   }
   type departmentSubs {
     type: String!
