@@ -212,7 +212,7 @@ module.exports = {
             name: iName,
             password: await bcrypt.hash(iPassword, salt),
             employeeId,
-            avatar: fileMess.avatar
+            avatar: fileMess ? fileMess.avatar : null
           })
           message.text = 'Пользователь успешно добавлен'
           message.id = newUser.id
