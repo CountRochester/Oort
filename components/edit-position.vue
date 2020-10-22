@@ -150,75 +150,39 @@ export default {
     },
 
     async save (item) {
-      // Если нажата кнопка добавить пользователя
+      // Если нажата кнопка добавить должность
       if (!this.$refs.form.validate()) {
-        this.busy = false
         return
       }
       this.busy = true
+      const dat = this.editedItem.posNameDat.length ? `posNameDat: "${this.editedItem.posNameDat}"` : ''
       if (this.editedIndex === -1) {
-        let dat = ''
-        if (this.editedItem.secondNameDat.length) {
-          dat = `secondNameDat: "${this.editedItem.secondNameDat}"`
-        }
         const query = `
           mutation {
-            addEmployee (employee: {
-              firstName: "${this.editedItem.firstName}"
-              secondName: "${this.editedItem.secondName}"
+            addPosition (position: {
+              posName: "${this.editedItem.posName}"
               ${dat}
-              middleName: "${this.editedItem.middleName}"
-              tabelNumber: "${this.editedItem.tabelNumber}"
-              phone1: "${this.editedItem.phone1}"
-              phone2: "${this.editedItem.phone2}"
-              phone3: "${this.editedItem.phone3}"
-              email1: "${this.editedItem.email1}"
-              email2: "${this.editedItem.email2}"
-            } ) {
+              canSignExtDocs: ${this.editedItem.canSignExtDocs}
+              canSignIntDocs: ${this.editedItem.canSignIntDocs}
+            }) {
               type
+              id
               text
               messageType
-              id
               item
             }
           }
         `
-        const message = await gQLRequestMessage(this, query)
-        await Promise.all([
-          // Если нужно добавить должности
-          this.$refs.curPos.addNewPosition(message[0]),
-          // Если нужно редактировать должности
-          this.$refs.curPos.editPosition(message[0]),
-          // если нужно удалить должности
-          this.$refs.curPos.deletePositions()
-        ])
+        await gQLRequestMessage(this, query)
       } else {
-        // Если нажата кнопка редактировать пользователя
-        let dat = ''
-        if (this.editedItem.secondNameDat.length) {
-          dat = `secondNameDat: "${this.editedItem.secondNameDat}"`
-        }
-        await Promise.all([
-          // Если нужно добавить должности
-          this.$refs.curPos.addNewPosition(this.editedItem.id),
-          // Если нужно редактировать должности
-          this.$refs.curPos.editPosition(this.editedItem.id),
-          // если нужно удалить должности
-          this.$refs.curPos.deletePositions()
-        ])
+        // Если нажата кнопка редактировать должность
         const query = `
           mutation {
-            editEmployee (id: "${this.editedItem.id}" employee: {
-              firstName: "${this.editedItem.firstName}"
-              secondName: "${this.editedItem.secondName}"
+            editPosition (id: "${this.editedItem.id}" position: {
+              posName: "${this.editedItem.posName}"
               ${dat}
-              middleName: "${this.editedItem.middleName}"
-              tabelNumber: "${this.editedItem.tabelNumber}"
-              phone1: "${this.editedItem.phone1}"
-              phone2: "${this.editedItem.phone2}"
-              phone3: "${this.editedItem.phone3}"
-              email1: "${this.editedItem.email1}"
-              email2: "${this.editedItem.email2}"
+              canSignExtDocs: ${this.editedItem.canSignExtDocs}
+              canSignIntDocs: ${this.editedItem.canSignIntDocs}
             }) {
               type
               id
