@@ -24,6 +24,10 @@
     </v-tooltip>
     <v-toolbar-title v-text="title" />
     <v-spacer />
+    <div v-if="showSearchDoc">
+      <searchDocument />
+    </div>
+    <v-spacer />
     <div v-if="!ok" ref="login">
       <v-btn
         id="login"
@@ -124,8 +128,12 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import searchDocument from '@/components/serch-document'
 
 export default {
+  components: {
+    searchDocument
+  },
   data () {
     return {
       // title: 'СКБ',
@@ -151,6 +159,13 @@ export default {
     // ...mapState({
     //   title: 'navInterface/currentTitle'
     // }),
+    uri () {
+      return this.$route.path
+    },
+    showSearchDoc () {
+      const arr = this.uri.split('/')
+      return arr[1] === 'docs'
+    },
     title () {
       return this.$store.state.navInterface.currentTitle
     },
@@ -189,11 +204,15 @@ export default {
     },
     ok (newVal) {
       this.logoutHover = false
+    },
+    uri (val) {
+      console.log('URI:', val)
     }
   },
 
   async created () {
     await this.fetch('Users')
+    console.log(this.uri)
   },
 
   methods: {

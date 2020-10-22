@@ -11,8 +11,8 @@ async function gQLRequest (query) {
 
 async function gQLRawRequest (query, variables) {
   try {
-    // const url = `http://${location.hostname}:${location.port || 3000}/graphql`
-    const url = `http://${HOSTNAME}:${PORT}/graphql`
+    const url = `http://${location.hostname}:${location.port || 3000}/graphql`
+    // const url = `http://${HOSTNAME}:${PORT}/graphql`
     const response = await fetch(url, {
       method: 'post',
       headers: {

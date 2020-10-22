@@ -180,8 +180,8 @@ module.exports = {
         },
         // You can use `wss` for secure connection (recommended in production)
         // Use `null` to disable subscriptions
-        // wsEndpoint: `ws://${keys.APOLLO_HOST || '192.168.40.63'}:${keys.APOLLO_PORT || 80}/graphql`, // optional
-        wsEndpoint: 'ws://192.168.40.63/graphql', // optional
+        wsEndpoint: `ws://${keys.APOLLO_HOST || '192.168.40.63'}:${keys.APOLLO_PORT || 80}/graphql`, // optional
+        // wsEndpoint: 'ws://192.168.40.63/graphql', // optional
         // wsEndpoint: 'ws://localhost:3000/graphql', // optional
         // LocalStorage token
         tokenName: 'apollo-token', // optional
