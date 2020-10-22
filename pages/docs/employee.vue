@@ -203,7 +203,8 @@ export default {
     ...mapActions({
       setDep: 'auth/selectDep',
       setBusy: 'navInterface/setBusy',
-      unsetBusy: 'navInterface/unsetBusy'
+      unsetBusy: 'navInterface/unsetBusy',
+      setSearch: 'navInterface/setSearch'
     }),
 
     async initialize () {

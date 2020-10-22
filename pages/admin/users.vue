@@ -14,6 +14,7 @@
         <v-data-table
           :headers="headers"
           :items="users"
+          :search="search"
           :footer-props="{
             itemsPerPageText: 'Записей на странице',
             itemsPerPageAllText: 'все',
@@ -32,6 +33,13 @@
                 vertical
               />
               <v-spacer />
+              <v-text-field
+                v-model="search"
+                append-icon="mdi-magnify"
+                label="Поиск"
+                single-line
+                hide-details
+              />
               <v-dialog v-model="dialog" max-width="600px" @keydown.enter.prevent="save">
                 <template v-slot:activator="{ on }">
                   <v-btn color="primary" dark class="mb-2" v-on="on">
@@ -128,6 +136,7 @@ export default {
   data () {
     return {
       dialog: false,
+      storage: this.$docs.buffer,
       headers: [
         {
           text: '№',
@@ -187,16 +196,36 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? 'Новая запись' : 'Редактировать'
     },
+    employees () {
+      return this.getter('employees', 'items')
+    },
+    search: {
+      get () {
+        return this.$store.state.navInterface.search
+      },
+      set (newVal) {
+        this.setSearch(newVal)
+      }
+    },
+    busy: {
+      get () {
+        return this.$store.state.navInterface.busy
+      },
+      set (newVal) {
+        if (newVal === true) {
+          this.setBusy()
+        } else if (newVal === false) {
+          this.unsetBusy()
+        }
+      }
+    },
     ...mapGetters({
       user: 'auth/getUser',
-      employee: 'auth/getEmployeeById',
       usersDep: 'auth/getUserDep'
     }),
     ...mapState('auth', {
       users: 'users',
-      groups: 'groups',
-      deps: 'deps',
-      employees: 'employees'
+      groups: 'groups'
     })
   },
 
@@ -213,12 +242,18 @@ export default {
   methods: {
     ...mapActions({
       fetchForce: 'fetchForce',
-      fetch: 'fetch'
+      fetch: 'fetch',
+      setBusy: 'navInterface/setBusy',
+      setSearch: 'navInterface/setSearch',
+      unsetBusy: 'navInterface/unsetBusy'
     }),
+    getter (ent, type) {
+      if (!this.storage) { return [] }
+      if (this.storage[ent].synchronization) { return [] }
+      return this.storage[ent][type]
+    },
     async initialize () {
       try {
-        await this.fetch('Employees')
-        await this.fetch('Deps')
         await this.fetch('Users')
         await this.fetch('Groups')
       } catch (err) {

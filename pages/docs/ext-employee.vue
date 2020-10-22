@@ -263,7 +263,8 @@ export default {
     },
     ...mapActions({
       setBusy: 'navInterface/setBusy',
-      unsetBusy: 'navInterface/unsetBusy'
+      unsetBusy: 'navInterface/unsetBusy',
+      setSearch: 'navInterface/setSearch'
     }),
 
     async initialize () {
