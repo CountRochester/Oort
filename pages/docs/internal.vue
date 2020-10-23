@@ -138,13 +138,13 @@
 /* eslint-disable no-useless-escape */
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
-import viewInternal from '@/components/view-internal'
 import Rules from '@/utils/rules'
 import Messenger from '@/utils/messenger'
 import { checkUserPermission } from '@/utils/permission'
 import { gQLRequestMessage } from '@/utils/gql-request'
 import { getFormatedDate } from '@/utils/date.js'
 import { Internal } from '@/Storage/ent-methods/internals'
+import viewInternal from '@/components/view-internal'
 import editInternal from '@/components/edit-internal'
 import tableToolbar from '@/components/table-toolbar'
 
