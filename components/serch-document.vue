@@ -27,94 +27,119 @@
         <v-card-title>Найти документ</v-card-title>
         <v-card-text>
           <v-row>
-            <v-col cols="4">
-              <v-select
-                v-model="selectedType"
-                :items="type"
-                label="Тип документа"
-              />
-            </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
+              <v-row class="mr-2">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="docNumber"
+                    label="Номер документа"
+                  />
+                </v-col>
+              </v-row>
               <v-row>
-                <v-text-field
-                  v-model="docNumber"
-                  label="Номер документа"
+                <v-checkbox
+                  v-model="exactMatch"
+                  label="Точное совпадение"
+                  :false-value="false"
+                  color="white"
                 />
-                <div class="mt-3">
-                  <v-tooltip bottom>
-                    <template #activator="{ on: onn }">
-                      <v-btn
-                        :disabled="busy"
-                        :color="theme.tables.buttonColor"
-                        dark
-                        class="mb-2 mx-1"
-                        @click="search"
-                        v-on="onn"
-                      >
-                        <v-icon>mdi-magnify</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Найти документ</span>
-                  </v-tooltip>
-                  <v-tooltip bottom>
-                    <template #activator="{ on: onn }">
-                      <v-btn
-                        :disabled="busy"
-                        :color="theme.tables.buttonColor"
-                        dark
-                        class="mb-2 mx-1"
-                        @click="searchResult = []"
-                        v-on="onn"
-                      >
-                        <v-icon>mdi-refresh</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Сбросить результаты поиска</span>
-                  </v-tooltip>
-                </div>
+              </v-row>
+            </v-col>
+            <v-col cols="5">
+              <v-row>
+                <v-col cols="6">
+                  <v-select
+                    v-model="selectedTypes"
+                    :items="type"
+                    label="Тип документа"
+                    multiple
+                  />
+                </v-col>
+                <v-col cols="6">
+                  <div class="mt-3">
+                    <v-tooltip bottom>
+                      <template #activator="{ on: onn }">
+                        <v-btn
+                          :disabled="busy"
+                          :color="theme.tables.buttonColor"
+                          dark
+                          class="mb-2 mx-1"
+                          @click="search"
+                          v-on="onn"
+                        >
+                          <v-icon>mdi-magnify</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Найти документ</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                      <template #activator="{ on: onn }">
+                        <v-btn
+                          :disabled="busy"
+                          :color="theme.tables.buttonColor"
+                          dark
+                          class="mb-2 mx-1"
+                          @click="searchResult = []"
+                          v-on="onn"
+                        >
+                          <v-icon>mdi-refresh</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Сбросить результаты поиска</span>
+                    </v-tooltip>
+                  </div>
+                </v-col>
               </v-row>
             </v-col>
           </v-row>
           <v-row>
-            <v-data-table
-              :headers="headers"
-              :items="searchResult"
-              :loading="busy"
-              dense
-              class="elevation-1"
-              locale="ru-RU"
-              loading-text="Загрузка"
-              :footer-props="{
-                itemsPerPageText: 'Записей на странице',
-                itemsPerPageAllText: 'все',
-                itemsPerPageOptions: [20, 50, 100]
-              }"
-            >
-              <template #item.action="{ item }">
-                <td @click.stop>
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on }">
-                      <v-icon :disabled="busy" small class="mr-2" v-on="on" @click="editItem(item)">
-                        mdi-pencil
-                      </v-icon>
-                    </template>
-                    <span>Редактирование</span>
-                  </v-tooltip>
-                  <v-icon v-if="checkPermiss(1)" :disabled="busy" small @click="deleteItem(item)">
-                    mdi-delete
-                  </v-icon>
-                </td>
-              </template>
-              <template #item.number="{ item }">
-                {{ getDocNumber(item) }}
-              </template>
-              <template #item.date="{ item }">
-                {{ getDocDate(item) }}
-              </template>
-              <template #item.incOut="{ item }">
-                {{ getDocType(item) }}
-              </template>
-            </v-data-table>
+            <v-container class="my-0 mx-0 px-0 py-0" fluid>
+              <v-data-table
+                :headers="headers"
+                :items="searchResult"
+                :loading="busy"
+                dense
+                class="elevation-1"
+                locale="ru-RU"
+                loading-text="Загрузка"
+                :footer-props="{
+                  itemsPerPageText: 'Записей на странице',
+                  itemsPerPageAllText: 'все',
+                  itemsPerPageOptions: [20, 50, 100]
+                }"
+                @click:row="viewItem"
+              >
+                <template #top>
+                  <v-toolbar flat color="light-blue darken-4" dense>
+                    <h2>Результаты поиска</h2>
+                  </v-toolbar>
+                </template>
+                <template #item.action="{ item }">
+                  <td @click.stop>
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on }">
+                        <v-icon :disabled="busy" small class="mr-2" v-on="on" @click="editItem(item)">
+                          mdi-pencil
+                        </v-icon>
+                      </template>
+                      <span>Редактирование</span>
+                    </v-tooltip>
+                    <v-icon v-if="checkPermiss(1)" :disabled="busy" small @click="deleteItem(item)">
+                      mdi-delete
+                    </v-icon>
+                  </td>
+                </template>
+                <template #item.number="{ item }">
+                  {{ getDocNumber(item) }}
+                </template>
+                <template #item.date="{ item }">
+                  {{ getDocDate(item) }}
+                </template>
+                <template #item.incOut="{ item }">
+                  {{ getDocType(item) }}
+                </template>
+              </v-data-table>
+            </v-container>
           </v-row>
         </v-card-text>
         <v-card-actions>
@@ -122,17 +147,18 @@
           <v-btn :disabled="busy" :color="theme.tables.buttonColor" text @click="close">
             Закрыть
           </v-btn>
-          <!-- <v-btn :disabled="busy" :color="theme.tables.buttonColor" text @click="search">
-            Найти
-          </v-btn> -->
         </v-card-actions>
       </v-card>
     </v-dialog>
     <viewExtInc ref="viewExtInc" :edited-item-id="editedItem.id" />
     <viewExtOut ref="viewExtOut" />
+    <viewIntInc ref="viewIntInc" :edited-item-id="editedItem.id" />
+    <viewIntOut ref="viewIntOut" />
     <viewInternal ref="viewInternal" :edited-item-id="editedItem.id" />
     <editExtInc ref="editExtInc" :initialize="initialize" />
     <editExtOut ref="editExtOut" :initialize="initialize" />
+    <editIntInc ref="editIntInc" :initialize="initialize" />
+    <editIntOut ref="editIntOut" :initialize="initialize" />
     <editInternal ref="editInternal" :initialize="initialize" />
   </div>
 </template>
@@ -146,6 +172,8 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { checkUserPermission } from '@/utils/permission'
+import { gQLRequestMessage } from '@/utils/gql-request'
+import { getFormatedDate } from '@/utils/date.js'
 import { ExtIncoming } from '@/Storage/ent-methods/ext-incomings'
 import { ExtOutgoing } from '@/Storage/ent-methods/ext-outgoings'
 import { IntIncoming } from '@/Storage/ent-methods/int-incomings'
@@ -180,9 +208,12 @@ export default {
       type: ['Входящие документы', 'Исходящие документы'],
       dialog: false,
       docNumber: '',
+      exactMatch: false,
       storage: this.$docs.buffer,
+      selectedTypes: [],
       searchResult: [],
-      selectedType: 'Входящие документы',
+      editedItem: {},
+      editedIndex: -1,
       headers: [
         {
           text: 'Номер документа',
@@ -270,10 +301,8 @@ export default {
     allOuts () {
       return [...this.extOutgoings, ...this.intOutgoings]
     },
-    items () {
-      return this.selectedType === 'Входящие документы'
-        ? this.allIncs
-        : this.allOuts
+    allDocs () {
+      return [...this.allIncs, ...this.allOuts]
     }
   },
 
@@ -290,63 +319,177 @@ export default {
     checkPermiss (val) {
       return checkUserPermission(this.userPermission, val)
     },
+    initialize () {
+      this.editedItem = {}
+      this.editedIndex = -1
+    },
+    getItemType (item) {
+      if (item instanceof ExtIncoming) {
+        return {
+          typeName: 'Внешний входящий',
+          type: 'ExtIncoming',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+      if (item instanceof ExtOutgoing) {
+        return {
+          typeName: 'Внешний исходящий',
+          type: 'ExtOutgoing',
+          docNumber: item.prefix + item.outNumber,
+          docDate: item.outDate
+        }
+      }
+      if (item instanceof IntIncoming) {
+        return {
+          typeName: 'Внутренний входящий',
+          type: 'IntIncoming',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+      if (item instanceof IntOutgoing) {
+        return {
+          typeName: 'Внутренний исходящий',
+          type: 'IntOutgoing',
+          docNumber: item.outNumber,
+          docDate: item.outDate
+        }
+      }
+      if (item instanceof Internal) {
+        return {
+          typeName: 'Прочие',
+          type: 'Internal',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+    },
     getDocType (item) {
-      if (item instanceof ExtIncoming) { return 'Внешний входящий' }
-      if (item instanceof ExtOutgoing) { return 'Внешний исходящий' }
-      if (item instanceof IntIncoming) { return 'Внутренний входящий' }
-      if (item instanceof IntOutgoing) { return 'Внутренний входящий' }
-      if (item instanceof Internal) { return 'Прочие' }
-      return 'Неизвестный тип документа'
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.typeName : 'Неизвестный тип документа'
     },
     getDocNumber (item) {
-      if (item instanceof ExtIncoming) { return item.incNumber }
-      if (item instanceof ExtOutgoing) { return item.prefix + item.outNumber }
-      if (item instanceof IntIncoming) { return item.incNumber }
-      if (item instanceof IntOutgoing) { return item.outNumber }
-      if (item instanceof Internal) { return item.incNumber }
-      return 'Неизвестный тип документа'
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.docNumber : 'Неизвестный тип документа'
     },
     getDocDate (item) {
-      if (item instanceof ExtIncoming) { return item.incDate }
-      if (item instanceof ExtOutgoing) { return item.outDate }
-      if (item instanceof IntIncoming) { return item.incDate }
-      if (item instanceof IntOutgoing) { return item.outDate }
-      if (item instanceof Internal) { return item.incDate }
-      return 'Неизвестный тип документа'
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.docDate : 'Неизвестный тип документа'
     },
     open () {
       this.dialog = true
     },
     close () {
+      this.initialize()
+      this.selectedTypes = []
+      this.searchResult = []
+      this.exactMatch = false
       this.docNumber = ''
       this.dialog = false
     },
-    editItem (item) {
-
+    async deleteItem (item) {
+      const itemType = this.getItemType(item)
+      if (!itemType) { return }
+      const query = `
+        mutation {
+          delete${itemType.type} (id: ${item.id}) {
+            type
+            id
+            text
+            messageType
+          }
+        }
+      `
+      this.busy = true
+      confirm(
+        `Вы уверены, что хотите удалить документ ${itemType.docNumber} от ${getFormatedDate(itemType.docDate)}?`
+      ) && (await gQLRequestMessage(this, query))
+      this.busy = false
+      this.initialize()
     },
-    deleteItem (item) {
-
+    viewItem (item) {
+      this.editedItem = item.clone()
+      if (item instanceof ExtIncoming) {
+        if (this.$refs.viewExtInc) {
+          this.$refs.viewExtInc.viewItem(item.id)
+        }
+      } else if (item instanceof ExtOutgoing) {
+        if (this.$refs.viewExtOut) {
+          this.$refs.viewExtOut.viewItem(item.id)
+        }
+      } else if (item instanceof IntIncoming) {
+        if (this.$refs.viewIntInc) {
+          this.$refs.viewIntInc.viewItem(item.id)
+        }
+      } else if (item instanceof IntOutgoing) {
+        if (this.$refs.viewIntOut) {
+          this.$refs.viewIntOut.viewItem(item.id)
+        }
+      } else if (item instanceof Internal) {
+        if (this.$refs.viewInternal) {
+          this.$refs.viewInternal.viewItem(item.id)
+        }
+      }
+    },
+    editItem (item) {
+      this.editedIndex = item.id || -1
+      this.editedItem = item.clone()
+      if (item instanceof ExtIncoming) {
+        if (this.$refs.editExtInc) {
+          this.$refs.editExtInc.open(this.editedItem)
+        }
+      } else if (item instanceof ExtOutgoing) {
+        if (this.$refs.editExtOut) {
+          this.$refs.editExtOut.open(this.editedItem)
+        }
+      } else if (item instanceof IntIncoming) {
+        if (this.$refs.editIntInc) {
+          this.$refs.editIntInc.open(this.editedItem)
+        }
+      } else if (item instanceof IntOutgoing) {
+        if (this.$refs.editIntOut) {
+          this.$refs.editIntOut.open(this.editedItem)
+        }
+      } else if (item instanceof Internal) {
+        if (this.$refs.editInternal) {
+          this.$refs.editInternal.open(this.editedItem)
+        }
+      }
     },
     search () {
       this.busy = true
       const output = []
-      let rowName
-      let arrayToSearchIn
-      if (this.type === 'Входящие документы') {
-        arrayToSearchIn = this.allIncs
-        rowName = 'incNumber'
+      let arrayToSearchIn = []
+      if (this.selectedTypes.length === 1) {
+        if (this.selectedTypes[0] === 'Входящие документы') {
+          arrayToSearchIn = this.allIncs
+        } else {
+          arrayToSearchIn = this.allOuts
+        }
       } else {
-        arrayToSearchIn = this.allOuts
-        rowName = 'outNumber'
+        arrayToSearchIn = this.allDocs
       }
-      for (let i = 0; i < arrayToSearchIn.length; i++) {
-        const item = arrayToSearchIn[i]
-        if (item[rowName].includes(this.docNumber)) {
-          output.push(item)
+      if (!this.exactMatch) {
+        for (let i = 0; i < arrayToSearchIn.length; i++) {
+          const item = arrayToSearchIn[i]
+          if (item.incNumber && item.incNumber.includes(this.docNumber)) {
+            output.push(item)
+          } else if (item.outNumber && item.outNumber.includes(this.docNumber)) {
+            output.push(item)
+          }
+        }
+      } else {
+        for (let i = 0; i < arrayToSearchIn.length; i++) {
+          const item = arrayToSearchIn[i]
+          if (item.incNumber && item.incNumber === this.docNumber) {
+            output.push(item)
+          } else if (item.outNumber && item.outNumber === this.docNumber) {
+            output.push(item)
+          }
         }
       }
       this.busy = false
-      console.log('output', output)
       this.searchResult = output
     }
   }

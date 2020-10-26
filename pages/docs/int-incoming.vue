@@ -106,7 +106,7 @@
       <!-- ---------------------------------------------------------------------------------------------------------------- -->
       <!-- -------------------------------------------Диалог просмотра документа------------------------------------------- -->
       <!-- ---------------------------------------------------------------------------------------------------------------- -->
-      <viewIntInc ref="viewDialog" :edited-item-id="editedItem.Id" />
+      <viewIntInc ref="viewDialog" :edited-item-id="editedItem.id" />
       <viewIntOut ref="viewOutDialog" />
     </template>
 
@@ -172,7 +172,6 @@
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
 import { filter } from '@/utils/filter'
-import viewIntOut from '@/components/view-int-outgoing'
 import Rules from '@/utils/rules'
 import Messenger from '@/utils/messenger'
 import { checkUserPermission } from '@/utils/permission'
@@ -180,6 +179,7 @@ import { gQLRequestMessage } from '@/utils/gql-request'
 import { dateConvert, getFormatedDate } from '@/utils/date.js'
 import viewIntInc from '@/components/view-int-incoming'
 import { IntIncoming } from '@/Storage/ent-methods/int-incomings'
+import viewIntOut from '@/components/view-int-outgoing'
 import editIntInc from '@/components/edit-int-incoming'
 import tableToolbar from '@/components/table-toolbar'
 
