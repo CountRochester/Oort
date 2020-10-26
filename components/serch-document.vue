@@ -124,7 +124,7 @@
                       </template>
                       <span>Редактирование</span>
                     </v-tooltip>
-                    <v-icon v-if="checkPermiss(1)" :disabled="busy" small @click="deleteItem(item)">
+                    <v-icon v-if="checkPermiss(16)" :disabled="busy" small @click="deleteItem(item)">
                       mdi-delete
                     </v-icon>
                   </td>
