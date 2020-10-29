@@ -29,6 +29,7 @@
       <template v-slot:activator="{ on: onn }">
         <div v-on="onn">
           <v-btn
+            v-if="defaultItem"
             :disabled="busy"
             :color="theme.tables.menuText"
             dark
@@ -64,8 +65,8 @@ export default {
   props: {
     defaultItem: {
       type: Object,
-      required: true,
-      default: () => {}
+      required: false,
+      default: () => null
     },
     reset: {
       type: Function,

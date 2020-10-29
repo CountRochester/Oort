@@ -25,23 +25,16 @@
     <template #top>
       <tableToolbar
         ref="tableToolbar"
-        :default-item="defaultItem"
         :reset="reset"
-        :new-item="editItem"
       />
-      <!-- ---------------------------------------------------------------------------------- -->
-      <!-- ----------------------------Диалог редактирования документа----------------------- -->
-      <!-- ---------------------------------------------------------------------------------- -->
-      <editExtInc
-        ref="editForm"
-        :lazy-form="lazy"
-        :initialize="initialize"
-      />
-      <!-- ---------------------------------------------------------------------------------------------------------------- -->
-      <!-- -------------------------------------------Диалог просмотра документа------------------------------------------- -->
-      <!-- ---------------------------------------------------------------------------------------------------------------- -->
-      <viewExtInc ref="viewDialog" :edited-item-id="editedItem.id" />
-      <viewExtOut ref="viewOutDialog" />
+      <viewExtInc ref="viewExtInc" :edited-item-id="editedItem.id" />
+      <viewExtOut ref="viewExtOut" />
+      <viewIntInc ref="viewIntInc" :edited-item-id="editedItem.id" />
+      <viewIntOut ref="viewIntOut" />
+      <viewInternal ref="viewInternal" :edited-item-id="editedItem.id" />
+      <editExtInc ref="editExtInc" :initialize="initialize" />
+      <editIntInc ref="editIntInc" :initialize="initialize" />
+      <editInternal ref="editInternal" :initialize="initialize" />
     </template>
     <template #item.action="{ item }">
       <td @click.stop>
@@ -53,33 +46,26 @@
           </template>
           <span>Редактирование</span>
         </v-tooltip>
-        <v-icon v-if="checkPermiss(1)" :disabled="busy" small @click="deleteItem(item)">
-          mdi-delete
-        </v-icon>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-icon v-if="checkPermiss(16)" :disabled="busy" small v-on="on" @click="deleteItem(item)">
+              mdi-delete
+            </v-icon>
+          </template>
+          <span>Удалить</span>
+        </v-tooltip>
       </td>
     </template>
 
-    <template #item.organisation="{ item }">
-      <v-list-item v-for="orgId in item.organisationId" :key="orgId" dense class="pl-0 ml-n2">
-        <v-icon small>
-          mdi-office-building
-        </v-icon>
-        <span class="pl-1">
-          {{ organisation
-            ? organisation[orgId]
-              ? organisation[orgId].orgName
-              : ''
-            :'' }}
-        </span>
-      </v-list-item>
+    <template #item.number="{ item }">
+      <!-- {{ getDocNumber(item) }} -->
+      {{ item.incNumber || item.prefix + item.outNumber }}
     </template>
-
-    <template #item.dateVx="{ item }">
-      {{ item.incDate }}
+    <template #item.date="{ item }">
+      {{ getDocDate(item) }}
     </template>
-
-    <template #item.dateIsh="{ item }">
-      {{ item.extDate }}
+    <template #item.category="{ item }">
+      {{ getDocType(item) }}
     </template>
 
     <template #no-data>
@@ -102,16 +88,24 @@ import { mapGetters, mapActions } from 'vuex'
 import consola from 'consola'
 import moment from 'moment'
 // import { filter } from '@/utils/filter'
-import viewExtInc from '@/components/view-ext-incoming'
-import viewExtOut from '@/components/view-ext-outgoing'
 import tableToolbar from '@/components/table-toolbar'
-import editExtInc from '@/components/edit-ext-incoming'
 import { checkUserPermission } from '@/utils/permission'
 import { gQLRequestMessage } from '@/utils/gql-request'
 import { getFormatedDate } from '@/utils/date.js'
 import Rules from '@/utils/rules'
-import Messenger from '@/utils/messenger'
 import { ExtIncoming } from '@/Storage/ent-methods/ext-incomings'
+import { ExtOutgoing } from '@/Storage/ent-methods/ext-outgoings'
+import { IntIncoming } from '@/Storage/ent-methods/int-incomings'
+import { IntOutgoing } from '@/Storage/ent-methods/int-outgoings'
+import { Internal } from '@/Storage/ent-methods/internals'
+import viewExtInc from '@/components/view-ext-incoming'
+import viewExtOut from '@/components/view-ext-outgoing'
+import editExtInc from '@/components/edit-ext-incoming'
+import viewIntInc from '@/components/view-int-incoming'
+import viewIntOut from '@/components/view-int-outgoing'
+import editIntInc from '@/components/edit-int-incoming'
+import viewInternal from '@/components/view-internal'
+import editInternal from '@/components/edit-internal'
 
 moment.locale('ru')
 
@@ -119,6 +113,11 @@ export default {
   components: {
     viewExtInc,
     viewExtOut,
+    viewIntInc,
+    viewIntOut,
+    editIntInc,
+    viewInternal,
+    editInternal,
     tableToolbar,
     editExtInc
   },
@@ -126,62 +125,44 @@ export default {
     return {
       // --------------------------------Общие-----------------------------------
       storage: this.$docs.buffer,
-      messenger: Messenger.getInstance(),
       rules: Rules,
       headers: [
         {
-          text: 'Входящий №',
+          text: 'Номер документа',
           align: 'left',
           sortable: true,
           class: 'font-weight-medium subtitle-1',
           divider: true,
-          width: 120,
-          value: 'incNumber'
+          width: 180,
+          value: 'number'
         },
         {
-          text: 'Дата вх.',
+          text: 'Дата',
           sortable: true,
           class: 'font-weight-medium subtitle-1',
           divider: true,
           width: 120,
-          // value: 'incDate'
-          value: 'dateVx'
+          value: 'date'
         },
         {
           text: 'Краткое содержание',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 600,
+          value: 'subject'
+        },
+        {
+          text: 'Категория',
           sortable: false,
           class: 'font-weight-medium subtitle-1',
           divider: true,
           width: 400,
-          value: 'subject'
-        },
-        {
-          text: 'Откуда',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 250,
-          value: 'organisations'
-        },
-        {
-          text: 'Исходящий №',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 120,
-          value: 'extNumber'
-        },
-        {
-          text: 'Дата исх.',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 120,
-          value: 'dateIsh'
+          value: 'category'
         },
         {
           text: 'Состояние',
-          sortable: true,
+          sortable: false,
           class: 'font-weight-medium subtitle-1',
           divider: true,
           width: 200,
@@ -192,15 +173,12 @@ export default {
           sortable: false,
           class: 'font-weight-medium subtitle-1',
           divider: true,
-          width: 80,
           value: 'action'
         }
       ],
       editedIndex: -1,
-      defaultItem: new ExtIncoming(),
-      editedItem: new ExtIncoming(),
-      lazy: false,
-      editForm: null
+      editedItem: {},
+      lazy: false
       // ------------------------------------------------------------------------
     }
   },
@@ -232,24 +210,28 @@ export default {
       } else { return null }
     },
     showingItems () {
-      const output = this.extIncomingsOfSelectedDep
+      const docsFilteredByExec = this.allIncs.filter(doc => this.getExecutants(doc).includes(this.user.employee.id))
+      const output = docsFilteredByExec.filter(doc => doc.state !== 'Исполнено' && doc.state !== 'В деле')
       return output
     },
 
     extIncomings () {
       return this.getter('extIncomings', 'items')
     },
-    organisation () {
-      return this.getter('organisations', 'indexed')
+    intIncomings () {
+      return this.getter('intIncomings', 'items')
     },
-    currentPosition () {
-      return this.getter('currentPositions', 'indexed')
+    extOutgoings () {
+      return this.getter('extOutgoings', 'items')
     },
-    tema () {
-      return this.getter('temas', 'indexed')
+    intOutgoings () {
+      return this.getter('intOutgoings', 'items')
     },
-    extIncomingsOfSelectedDep () {
-      return this.extIncomings.filter(el => this.includesArray(el.executantsId, this.user.employee.Positions))
+    internals () {
+      return this.getter('internals', 'items')
+    },
+    allIncs () {
+      return [...this.extIncomings, ...this.intIncomings, ...this.internals]
     },
     ...mapGetters({
       user: 'auth/getUser',
@@ -263,8 +245,6 @@ export default {
   async mounted () {
     await this.initialize()
     this.$emit('ready')
-    console.log(this.showingItems)
-    console.log(this.user)
   },
 
   methods: {
@@ -304,12 +284,80 @@ export default {
             'extOutFiles'
           ])
         }
-        this.$refs.editForm.addresseeDeps = []
-        this.$refs.editForm.newState = null
         this.busy = false
       } catch (err) {
         throw err
       }
+    },
+
+    getItemType (item) {
+      if (item instanceof ExtIncoming) {
+        return {
+          typeName: 'Внешний входящий',
+          type: 'ExtIncoming',
+          class: ExtIncoming,
+          componentName: 'ExtInc',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+      if (item instanceof ExtOutgoing) {
+        return {
+          typeName: 'Внешний исходящий',
+          type: 'ExtOutgoing',
+          class: ExtOutgoing,
+          componentName: 'ExtOut',
+          docNumber: item.prefix + item.outNumber,
+          docDate: item.outDate
+        }
+      }
+      if (item instanceof IntIncoming) {
+        return {
+          typeName: 'Внутренний входящий',
+          type: 'IntIncoming',
+          class: IntIncoming,
+          componentName: 'IntInc',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+      if (item instanceof IntOutgoing) {
+        return {
+          typeName: 'Внутренний исходящий',
+          type: 'IntOutgoing',
+          class: IntOutgoing,
+          componentName: 'IntOut',
+          docNumber: item.outNumber,
+          docDate: item.outDate
+        }
+      }
+      if (item instanceof Internal) {
+        return {
+          typeName: 'Прочие',
+          type: 'Internal',
+          class: Internal,
+          componentName: 'Internal',
+          docNumber: item.incNumber,
+          docDate: item.incDate
+        }
+      }
+    },
+
+    getExecutants (item) {
+      return item.Resolutions.reduce((acc, res) => [...acc, ...res.executants], [])
+    },
+
+    getDocType (item) {
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.typeName : 'Неизвестный тип документа'
+    },
+    getDocNumber (item) {
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.docNumber : 'Неизвестный тип документа'
+    },
+    getDocDate (item) {
+      const itemType = this.getItemType(item)
+      return itemType ? itemType.docDate : 'Неизвестный тип документа'
     },
 
     async reset () {
@@ -326,9 +374,6 @@ export default {
           'extIncFiles',
           'incNumbers'
         ])
-        this.$refs.editForm.addresseeDeps = []
-        this.$refs.editForm.newState = null
-        console.log(this.messenger.getMessages())
         this.busy = false
         console.timeEnd('reset')
         consola.success('Reset ExtIncomings: OK')
@@ -338,16 +383,40 @@ export default {
     },
 
     editItem (item) {
-      this.editedIndex = item.id || -1
-      this.editedItem = this.editedIndex >= 0
-        ? this.storage.extIncomings.indexed[item.id].clone()
-        : new ExtIncoming()
-      this.$refs.editForm.open(this.editedItem)
+      // this.editedIndex = item.id || -1
+      // this.editedItem = this.editedIndex >= 0
+      //   ? this.storage.extIncomings.indexed[item.id].clone()
+      //   : new ExtIncoming()
+      // // this.$refs.editForm.open(this.editedItem)
     },
 
     viewItem (item) {
-      if (this.$refs.viewDialog) {
-        this.$refs.viewDialog.viewItem(item.id)
+      // if (this.$refs.viewDialog) {
+      //   this.$refs.viewDialog.viewItem(item.id)
+      // }
+      this.editedItem = item.clone()
+      const type = this.getItemType(item)
+      const componentName = `view${type.component}`
+      if (item instanceof ExtIncoming) {
+        if (this.$refs.viewExtInc) {
+          this.$refs.viewExtInc.viewItem(item.id)
+        }
+      } else if (item instanceof ExtOutgoing) {
+        if (this.$refs.viewExtOut) {
+          this.$refs.viewExtOut.viewItem(item.id)
+        }
+      } else if (item instanceof IntIncoming) {
+        if (this.$refs.viewIntInc) {
+          this.$refs.viewIntInc.viewItem(item.id)
+        }
+      } else if (item instanceof IntOutgoing) {
+        if (this.$refs.viewIntOut) {
+          this.$refs.viewIntOut.viewItem(item.id)
+        }
+      } else if (item instanceof Internal) {
+        if (this.$refs.viewInternal) {
+          this.$refs.viewInternal.viewItem(item.id)
+        }
       }
     },
 

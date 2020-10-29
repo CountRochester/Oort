@@ -208,6 +208,7 @@ export default {
         {
           text: 'Входящий №',
           align: 'left',
+
           sortable: true,
           class: 'font-weight-medium subtitle-1',
           divider: true,

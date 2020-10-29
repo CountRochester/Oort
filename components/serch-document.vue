@@ -101,6 +101,7 @@
                 dense
                 class="elevation-1"
                 locale="ru-RU"
+                multi-sort
                 loading-text="Загрузка"
                 :footer-props="{
                   itemsPerPageText: 'Записей на странице',
@@ -234,7 +235,7 @@ export default {
         },
         {
           text: 'Краткое содержание',
-          sortable: false,
+          sortable: true,
           class: 'font-weight-medium subtitle-1',
           divider: true,
           width: 600,
@@ -253,7 +254,6 @@ export default {
           sortable: false,
           class: 'font-weight-medium subtitle-1',
           divider: true,
-          // width: 80,
           value: 'action'
         }
       ]

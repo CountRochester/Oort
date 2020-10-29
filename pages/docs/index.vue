@@ -100,7 +100,7 @@ export default {
       currentCat: 'Внешние документы',
       // tabs: document.querySelectorAll()
       tabCat: [
-        { title: 'Мои входящие документы', icon: 'mdi-web', permission: 1, disabled: true },
+        { title: 'Мои входящие документы', icon: 'mdi-web', permission: 1, disabled: false },
         { title: 'Мои исходящие документы', icon: 'mdi-web', permission: 1, disabled: true },
         { title: 'Внешние документы', icon: 'mdi-web', permission: 1 },
         { title: 'Внутренние документы', icon: 'mdi-office-building', permission: 1 },
