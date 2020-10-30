@@ -64,7 +64,7 @@
           </v-tab>
         </v-tabs>
         <!-- eslint-disable-next-line vue/require-component-is -->
-        <component :is="selectedComponent" />
+        <component :is="selectedComponent" :type="selsectedComponentType" />
       </v-container>
     </v-flex>
   </v-layout>
@@ -73,7 +73,8 @@
 <script>
 import { mapState, mapActions, mapMutations, mapGetters } from 'vuex'
 // import * as subscriptions from '@/subscriptions'
-import { checkUserPermission } from '../../utils/permission'
+import personalDocuments from '@/components/personal-documents'
+import { checkUserPermission } from '@/utils/permission'
 
 import Contract from './contract'
 import Department from './department'
@@ -90,7 +91,6 @@ import State from './state'
 import Subdivision from './subdivision'
 import Tema from './tema'
 import Type from './type'
-import MyIncoming from './my-docs/my-incoming'
 
 export default {
   data () {
@@ -101,7 +101,7 @@ export default {
       // tabs: document.querySelectorAll()
       tabCat: [
         { title: 'Мои входящие документы', icon: 'mdi-web', permission: 1, disabled: false },
-        { title: 'Мои исходящие документы', icon: 'mdi-web', permission: 1, disabled: true },
+        { title: 'Мои исходящие документы', icon: 'mdi-web', permission: 1, disabled: false },
         { title: 'Внешние документы', icon: 'mdi-web', permission: 1 },
         { title: 'Внутренние документы', icon: 'mdi-office-building', permission: 1 },
         { title: 'Прочее', icon: 'mdi-bookshelf', permission: 1 },
@@ -114,7 +114,8 @@ export default {
           permission: 1,
           icon: 'mdi-email-receive',
           cat: 'Мои входящие документы',
-          component: MyIncoming
+          component: personalDocuments,
+          type: 'personalInternal'
         },
         {
           title: 'Входящие документы подразделения',
@@ -122,7 +123,8 @@ export default {
           permission: 1,
           icon: 'mdi-email-receive',
           cat: 'Мои входящие документы',
-          component: ExtIncoming
+          component: personalDocuments,
+          type: 'subdivisionInternal'
         },
         {
           title: 'Входящие документы отдела',
@@ -130,7 +132,8 @@ export default {
           permission: 16,
           icon: 'mdi-email-receive',
           cat: 'Мои входящие документы',
-          component: ExtIncoming
+          component: personalDocuments,
+          type: 'departmentInternal'
         },
         {
           title: 'Мои исходящие документы в работе',
@@ -138,7 +141,8 @@ export default {
           permission: 1,
           icon: 'mdi-email-receive',
           cat: 'Мои исходящие документы',
-          component: ExtIncoming
+          component: personalDocuments,
+          type: 'personalOutgoing'
         },
         {
           title: 'Исходящие документы подразделения',
@@ -146,7 +150,8 @@ export default {
           permission: 1,
           icon: 'mdi-email-receive',
           cat: 'Мои исходящие документы',
-          component: ExtIncoming
+          component: personalDocuments,
+          type: 'subdivisionOutgoing'
         },
         {
           title: 'Исходящие документы отдела',
@@ -154,7 +159,8 @@ export default {
           permission: 16,
           icon: 'mdi-email-receive',
           cat: 'Мои исходящие документы',
-          component: ExtIncoming
+          component: personalDocuments,
+          type: 'departmentOutgoing'
         },
         {
           title: 'Входящие внешние документы',
@@ -315,6 +321,10 @@ export default {
       // return () => import(`./${name}`)
       const tab = this.tabList.find(el => el.ref === this.currentItem)
       return tab.component
+    },
+    selsectedComponentType () {
+      const tab = this.tabList.find(el => el.ref === this.currentItem)
+      return tab.type
     },
     selectedTab () {
       const tab = this.tabList.find(el => el.ref === this.currentItem)

@@ -328,6 +328,9 @@ export default {
         return {
           typeName: 'Внешний входящий',
           type: 'ExtIncoming',
+          class: ExtIncoming,
+          execs: 'executantsId',
+          componentName: 'ExtInc',
           docNumber: item.incNumber,
           docDate: item.incDate
         }
@@ -336,6 +339,9 @@ export default {
         return {
           typeName: 'Внешний исходящий',
           type: 'ExtOutgoing',
+          class: ExtOutgoing,
+          execs: 'addresseesId',
+          componentName: 'ExtOut',
           docNumber: item.prefix + item.outNumber,
           docDate: item.outDate
         }
@@ -344,6 +350,9 @@ export default {
         return {
           typeName: 'Внутренний входящий',
           type: 'IntIncoming',
+          class: IntIncoming,
+          execs: 'addresseesId',
+          componentName: 'IntInc',
           docNumber: item.incNumber,
           docDate: item.incDate
         }
@@ -352,6 +361,9 @@ export default {
         return {
           typeName: 'Внутренний исходящий',
           type: 'IntOutgoing',
+          class: IntOutgoing,
+          execs: 'addresseesId',
+          componentName: 'IntOut',
           docNumber: item.outNumber,
           docDate: item.outDate
         }
@@ -360,6 +372,9 @@ export default {
         return {
           typeName: 'Прочие',
           type: 'Internal',
+          class: Internal,
+          execs: 'addresseesId',
+          componentName: 'Internal',
           docNumber: item.incNumber,
           docDate: item.incDate
         }
@@ -410,50 +425,22 @@ export default {
     },
     viewItem (item) {
       this.editedItem = item.clone()
-      if (item instanceof ExtIncoming) {
-        if (this.$refs.viewExtInc) {
-          this.$refs.viewExtInc.viewItem(item.id)
-        }
-      } else if (item instanceof ExtOutgoing) {
-        if (this.$refs.viewExtOut) {
-          this.$refs.viewExtOut.viewItem(item.id)
-        }
-      } else if (item instanceof IntIncoming) {
-        if (this.$refs.viewIntInc) {
-          this.$refs.viewIntInc.viewItem(item.id)
-        }
-      } else if (item instanceof IntOutgoing) {
-        if (this.$refs.viewIntOut) {
-          this.$refs.viewIntOut.viewItem(item.id)
-        }
-      } else if (item instanceof Internal) {
-        if (this.$refs.viewInternal) {
-          this.$refs.viewInternal.viewItem(item.id)
+      const type = this.getItemType(item)
+      const componentName = `view${type.componentName}`
+      if (type !== 'Неизвестный тип документа') {
+        if (this.$refs[componentName]) {
+          this.$refs[componentName].viewItem(item.id)
         }
       }
     },
     editItem (item) {
-      this.editedIndex = item.id || -1
       this.editedItem = item.clone()
-      if (item instanceof ExtIncoming) {
-        if (this.$refs.editExtInc) {
-          this.$refs.editExtInc.open(this.editedItem)
-        }
-      } else if (item instanceof ExtOutgoing) {
-        if (this.$refs.editExtOut) {
-          this.$refs.editExtOut.open(this.editedItem)
-        }
-      } else if (item instanceof IntIncoming) {
-        if (this.$refs.editIntInc) {
-          this.$refs.editIntInc.open(this.editedItem)
-        }
-      } else if (item instanceof IntOutgoing) {
-        if (this.$refs.editIntOut) {
-          this.$refs.editIntOut.open(this.editedItem)
-        }
-      } else if (item instanceof Internal) {
-        if (this.$refs.editInternal) {
-          this.$refs.editInternal.open(this.editedItem)
+      this.editedIndex = item.id || -1
+      const type = this.getItemType(item)
+      const componentName = `edit${type.componentName}`
+      if (type !== 'Неизвестный тип документа') {
+        if (this.$refs[componentName]) {
+          this.$refs[componentName].open(this.editedItem)
         }
       }
     },

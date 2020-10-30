@@ -1,79 +1,83 @@
 <template>
-  <v-data-table
-    ref="table"
-    :headers="headers"
-    :items="showingItems"
-    :search="search"
-    :footer-props="{
-      itemsPerPageText: 'Записей на странице',
-      itemsPerPageAllText: 'все',
-      itemsPerPageOptions: [20, 50, 100]
-    }"
-    :loading="busy"
-    multi-sort
-    loading-text="Загрузка"
-    locale="ru-RU"
-    class="elevation-1"
-    @click:row="viewItem"
-  >
-    <template #item.incNumber="{ item }">
-      <v-icon v-if="item.needAnswer && !item.answersId.length" color="red">
-        mdi-exclamation-thick
-      </v-icon>
-      {{ item.incNumber }}
-    </template>
-    <template #top>
-      <tableToolbar
-        ref="tableToolbar"
-        :reset="reset"
-      />
-      <viewExtInc ref="viewExtInc" :edited-item-id="editedItem.id" />
-      <viewExtOut ref="viewExtOut" />
-      <viewIntInc ref="viewIntInc" :edited-item-id="editedItem.id" />
-      <viewIntOut ref="viewIntOut" />
-      <viewInternal ref="viewInternal" :edited-item-id="editedItem.id" />
-      <editExtInc ref="editExtInc" :initialize="initialize" />
-      <editIntInc ref="editIntInc" :initialize="initialize" />
-      <editInternal ref="editInternal" :initialize="initialize" />
-    </template>
-    <template #item.action="{ item }">
-      <td @click.stop>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-icon :disabled="busy" small class="mr-2" v-on="on" @click="editItem(item)">
-              mdi-pencil
-            </v-icon>
-          </template>
-          <span>Редактирование</span>
-        </v-tooltip>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-icon v-if="checkPermiss(16)" :disabled="busy" small v-on="on" @click="deleteItem(item)">
-              mdi-delete
-            </v-icon>
-          </template>
-          <span>Удалить</span>
-        </v-tooltip>
-      </td>
-    </template>
+  <div>
+    <v-data-table
+      ref="table"
+      :headers="headers"
+      :items="showingItems"
+      :search="search"
+      :footer-props="{
+        itemsPerPageText: 'Записей на странице',
+        itemsPerPageAllText: 'все',
+        itemsPerPageOptions: [20, 50, 100]
+      }"
+      :loading="busy"
+      multi-sort
+      loading-text="Загрузка"
+      locale="ru-RU"
+      class="elevation-1"
+      @click:row="viewItem"
+    >
+      <template #item.incNumber="{ item }">
+        <v-icon v-if="item.needAnswer && !item.answersId.length" color="red">
+          mdi-exclamation-thick
+        </v-icon>
+        {{ item.incNumber }}
+      </template>
+      <template #top>
+        <tableToolbar
+          ref="tableToolbar"
+          :reset="reset"
+        />
+      </template>
+      <template #item.action="{ item }">
+        <td @click.stop>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon :disabled="busy" small class="mr-2" v-on="on" @click="editItem(item)">
+                mdi-pencil
+              </v-icon>
+            </template>
+            <span>Редактирование</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon v-if="checkPermiss(16)" :disabled="busy" small v-on="on" @click="deleteItem(item)">
+                mdi-delete
+              </v-icon>
+            </template>
+            <span>Удалить</span>
+          </v-tooltip>
+        </td>
+      </template>
 
-    <template #item.number="{ item }">
-      <!-- {{ getDocNumber(item) }} -->
-      {{ item.incNumber || item.prefix + item.outNumber }}
-    </template>
-    <template #item.date="{ item }">
-      {{ getDocDate(item) }}
-    </template>
-    <template #item.category="{ item }">
-      {{ getDocType(item) }}
-    </template>
+      <template #item.number="{ item }">
+        <!-- {{ getDocNumber(item) }} -->
+        {{ item.incNumber || item.prefix + item.outNumber }}
+      </template>
+      <template #item.date="{ item }">
+        {{ getDocDate(item) }}
+      </template>
+      <template #item.category="{ item }">
+        {{ getDocType(item) }}
+      </template>
 
-    <template #no-data>
-      <v-btn :disabled="busy" :color="theme.mainTheme.primary" @click="initialize">
-        Сбросить
-      </v-btn>
-    </template>
-  </v-data-table>
+      <template #no-data>
+        <v-btn :disabled="busy" :color="theme.mainTheme.primary" @click="initialize">
+          Сбросить
+        </v-btn>
+      </template>
+    </v-data-table>
+    <viewExtInc ref="viewExtInc" :edited-item-id="editedItem.id" />
+    <viewExtOut ref="viewExtOut" />
+    <viewIntInc ref="viewIntInc" :edited-item-id="editedItem.id" />
+    <viewIntOut ref="viewIntOut" />
+    <viewInternal ref="viewInternal" :edited-item-id="editedItem.id" />
+    <editExtInc ref="editExtInc" :initialize="initialize" />
+    <editIntInc ref="editIntInc" :initialize="initialize" />
+    <editInternal ref="editInternal" :initialize="initialize" />
+    <editExtOut ref="editExtOut" :initialize="initialize" />
+    <editIntOut ref="editIntOut" :initialize="initialize" />
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -100,12 +104,14 @@ import { IntOutgoing } from '@/Storage/ent-methods/int-outgoings'
 import { Internal } from '@/Storage/ent-methods/internals'
 import viewExtInc from '@/components/view-ext-incoming'
 import viewExtOut from '@/components/view-ext-outgoing'
-import editExtInc from '@/components/edit-ext-incoming'
 import viewIntInc from '@/components/view-int-incoming'
 import viewIntOut from '@/components/view-int-outgoing'
-import editIntInc from '@/components/edit-int-incoming'
 import viewInternal from '@/components/view-internal'
+import editExtInc from '@/components/edit-ext-incoming'
+import editIntInc from '@/components/edit-int-incoming'
 import editInternal from '@/components/edit-internal'
+import editExtOut from '@/components/edit-ext-outgoing'
+import editIntOut from '@/components/edit-int-outgoing'
 
 moment.locale('ru')
 
@@ -119,7 +125,24 @@ export default {
     viewInternal,
     editInternal,
     tableToolbar,
-    editExtInc
+    editExtInc,
+    editIntOut,
+    editExtOut
+  },
+  props: {
+    type: {
+      type: String,
+      default: 'personalInternal',
+      validator: (value) => {
+        // Значение должно соответствовать одной из этих строк
+        return ['personalInternal',
+          'subdivisionInternal',
+          'departmentInternal',
+          'personalOutgoing',
+          'subdivisionOutgoing',
+          'departmentOutgoing'].includes(value)
+      }
+    }
   },
   data () {
     return {
@@ -209,12 +232,61 @@ export default {
         return this.tableBody.selectDep
       } else { return null }
     },
-    showingItems () {
-      const docsFilteredByExec = this.allIncs.filter(doc => this.getExecutants(doc).includes(this.user.employee.id))
-      const output = docsFilteredByExec.filter(doc => doc.state !== 'Исполнено' && doc.state !== 'В деле')
+    currentPositionsOfCurrentUser () {
+      const curPos = this.currentPositions.filter(el => el.EmployeeId === this.user.employee.id)
+      return curPos.reduce((acc, item) => [...acc, item.id], [])
+    },
+    subdivisionsOfCurrentUser () {
+      let output = []
+      this.currentPositionsOfCurrentUser.forEach((el) => {
+        output = [...output, ...this.currentPosition[el].SubdivisionId]
+      })
       return output
     },
-
+    executantsOfCurrentUserSubdivisions () {
+      return this.currentPositions.filter(el => el.SubdivisionId.some(subId => this.subdivisionsOfCurrentUser.includes(subId)))
+        .reduce((acc, item) => [...acc, item.id], [])
+    },
+    showingItems () {
+      let output
+      switch (this.type) {
+        case 'personalInternal': {
+          const docsFilteredByExec = this.allIncs.filter(doc => this.getExecutants(doc).some(el => this.currentPositionsOfCurrentUser.includes(el)))
+          output = docsFilteredByExec.filter(doc => doc.state !== 'Исполнено' && doc.state !== 'В деле')
+          break
+        }
+        case 'subdivisionInternal': {
+          const docsFilteredByExec = this.allIncs.filter(doc => this.getExecutants(doc).some(el => this.executantsOfCurrentUserSubdivisions.includes(el)))
+          output = docsFilteredByExec.filter(doc => doc.state !== 'Исполнено' && doc.state !== 'В деле')
+          break
+        }
+        case 'departmentInternal': {
+          output = this.allIncs.filter(doc => doc.state !== 'Исполнено' && doc.state !== 'В деле')
+          break
+        }
+        case 'personalOutgoing': {
+          const docsFilteredByExec = this.allOuts.filter(doc => this.currentPositionsOfCurrentUser.includes(doc.authorId))
+          output = docsFilteredByExec.filter(doc => doc.state !== 'Отправлен' && doc.state !== 'В деле')
+          break
+        }
+        case 'subdivisionOutgoing': {
+          const docsFilteredByExec = this.allOuts.filter(doc => this.executantsOfCurrentUserSubdivisions.includes(doc.authorId))
+          output = docsFilteredByExec.filter(doc => doc.state !== 'Отправлен' && doc.state !== 'В деле')
+          break
+        }
+        case 'departmentOutgoing': {
+          output = this.allOuts.filter(doc => doc.state !== 'Отправлен' && doc.state !== 'В деле')
+          break
+        }
+      }
+      return output
+    },
+    currentPositions () {
+      return this.getter('currentPositions', 'items')
+    },
+    currentPosition () {
+      return this.getter('currentPositions', 'indexed')
+    },
     extIncomings () {
       return this.getter('extIncomings', 'items')
     },
@@ -232,6 +304,9 @@ export default {
     },
     allIncs () {
       return [...this.extIncomings, ...this.intIncomings, ...this.internals]
+    },
+    allOuts () {
+      return [...this.extOutgoings, ...this.intOutgoings]
     },
     ...mapGetters({
       user: 'auth/getUser',
@@ -275,6 +350,7 @@ export default {
 
     async initialize () {
       try {
+        console.log(this.user)
         this.busy = true
         if (!this.storage.extIncomings.items.length || !this.storage.extIncFiles.items.length) {
           await this.$docs.updateEntitys([
@@ -296,6 +372,7 @@ export default {
           typeName: 'Внешний входящий',
           type: 'ExtIncoming',
           class: ExtIncoming,
+          execs: 'executantsId',
           componentName: 'ExtInc',
           docNumber: item.incNumber,
           docDate: item.incDate
@@ -306,6 +383,7 @@ export default {
           typeName: 'Внешний исходящий',
           type: 'ExtOutgoing',
           class: ExtOutgoing,
+          execs: 'addresseesId',
           componentName: 'ExtOut',
           docNumber: item.prefix + item.outNumber,
           docDate: item.outDate
@@ -316,6 +394,7 @@ export default {
           typeName: 'Внутренний входящий',
           type: 'IntIncoming',
           class: IntIncoming,
+          execs: 'addresseesId',
           componentName: 'IntInc',
           docNumber: item.incNumber,
           docDate: item.incDate
@@ -326,6 +405,7 @@ export default {
           typeName: 'Внутренний исходящий',
           type: 'IntOutgoing',
           class: IntOutgoing,
+          execs: 'addresseesId',
           componentName: 'IntOut',
           docNumber: item.outNumber,
           docDate: item.outDate
@@ -336,6 +416,7 @@ export default {
           typeName: 'Прочие',
           type: 'Internal',
           class: Internal,
+          execs: 'addresseesId',
           componentName: 'Internal',
           docNumber: item.incNumber,
           docDate: item.incDate
@@ -344,7 +425,13 @@ export default {
     },
 
     getExecutants (item) {
-      return item.Resolutions.reduce((acc, res) => [...acc, ...res.executants], [])
+      const itemType = this.getItemType(item)
+      const execsByResolutions = item.Resolutions
+        ? item.Resolutions.reduce((acc, res) => [...acc, ...res.executants], [])
+        : []
+      const restExecs = item[itemType.execs]
+      const output = [...execsByResolutions, ...restExecs].filter((el, index, self) => index === self.findIndex(t => (t === el)))
+      return output
     },
 
     getDocType (item) {
@@ -383,39 +470,24 @@ export default {
     },
 
     editItem (item) {
-      // this.editedIndex = item.id || -1
-      // this.editedItem = this.editedIndex >= 0
-      //   ? this.storage.extIncomings.indexed[item.id].clone()
-      //   : new ExtIncoming()
-      // // this.$refs.editForm.open(this.editedItem)
+      this.editedItem = item.clone()
+      this.editedIndex = item.id || -1
+      const type = this.getItemType(item)
+      const componentName = `edit${type.componentName}`
+      if (type !== 'Неизвестный тип документа') {
+        if (this.$refs[componentName]) {
+          this.$refs[componentName].open(this.editedItem)
+        }
+      }
     },
 
     viewItem (item) {
-      // if (this.$refs.viewDialog) {
-      //   this.$refs.viewDialog.viewItem(item.id)
-      // }
       this.editedItem = item.clone()
       const type = this.getItemType(item)
-      const componentName = `view${type.component}`
-      if (item instanceof ExtIncoming) {
-        if (this.$refs.viewExtInc) {
-          this.$refs.viewExtInc.viewItem(item.id)
-        }
-      } else if (item instanceof ExtOutgoing) {
-        if (this.$refs.viewExtOut) {
-          this.$refs.viewExtOut.viewItem(item.id)
-        }
-      } else if (item instanceof IntIncoming) {
-        if (this.$refs.viewIntInc) {
-          this.$refs.viewIntInc.viewItem(item.id)
-        }
-      } else if (item instanceof IntOutgoing) {
-        if (this.$refs.viewIntOut) {
-          this.$refs.viewIntOut.viewItem(item.id)
-        }
-      } else if (item instanceof Internal) {
-        if (this.$refs.viewInternal) {
-          this.$refs.viewInternal.viewItem(item.id)
+      const componentName = `view${type.componentName}`
+      if (type !== 'Неизвестный тип документа') {
+        if (this.$refs[componentName]) {
+          this.$refs[componentName].viewItem(item.id)
         }
       }
     },
@@ -425,9 +497,10 @@ export default {
     },
 
     async deleteItem (item) {
+      const { type } = this.getItemType(item)
       const query = `
         mutation {
-          deleteExtIncoming (id: ${item.id}) {
+          delete${type} (id: ${item.id}) {
             type
             id
             text

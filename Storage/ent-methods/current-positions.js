@@ -209,17 +209,27 @@ export function formCurrentPositions (element) {
 
 export async function addCurrentPosition (instance, items) {
   const storage = await common.getStorage(instance)
-  for (const item of items) {
-    await common.addItem(instance, 'currentPositions', item)
-    await updateEmployeeByAddCurPos(storage, item.id)
+  if (Object.prototype.toString.call(items) === '[object Array]') {
+    for (const item of items) {
+      await common.addItem(instance, 'currentPositions', item)
+      await updateEmployeeByAddCurPos(storage, item.id)
+    }
+  } else {
+    await common.addItem(instance, 'currentPositions', items)
+    await updateEmployeeByAddCurPos(storage, items.id)
   }
 }
 
 export async function editCurrentPosition (instance, items) {
   const storage = await common.getStorage(instance)
-  for (const item of items) {
-    await common.editItem(instance, 'currentPositions', item)
-    await updateEmployeeByAddCurPos(storage, item.id)
+  if (Object.prototype.toString.call(items) === '[object Array]') {
+    for (const item of items) {
+      await common.editItem(instance, 'currentPositions', item)
+      await updateEmployeeByAddCurPos(storage, item.id)
+    }
+  } else {
+    await common.editItem(instance, 'currentPositions', items)
+    await updateEmployeeByAddCurPos(storage, items.id)
   }
 }
 

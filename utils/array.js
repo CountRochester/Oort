@@ -22,6 +22,10 @@ export function removeDublicatesSimple (arr) {
   }
 }
 
+export function includesMultiple (arr1, arr2) {
+  return arr1.some(el => arr2.includes(el))
+}
+
 export function reduceArr (arr, count) {
   const output = []
   if (count >= arr.length) {
