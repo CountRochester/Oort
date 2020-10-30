@@ -65,6 +65,7 @@
 //  isAnswerOn
 //  files
 //  dateIsh
+//  fullOutNumber
 //
 // --Ссылки:
 //
@@ -127,6 +128,10 @@ export class NullExtOutgoing extends common.Entity {
     this.Temas = []
     this.IsAnswerOn = []
     this.Files = []
+  }
+
+  get fullOutNumber () {
+    return this.prefix + this.outNumber
   }
 
   get authorId () {

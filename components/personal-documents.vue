@@ -11,7 +11,7 @@
         itemsPerPageOptions: [20, 50, 100]
       }"
       :loading="busy"
-      multi-sort
+      multi-sort.sync
       loading-text="Загрузка"
       locale="ru-RU"
       class="elevation-1"
@@ -50,12 +50,8 @@
         </td>
       </template>
 
-      <template #item.number="{ item }">
-        <!-- {{ getDocNumber(item) }} -->
-        {{ item.incNumber || item.prefix + item.outNumber }}
-      </template>
-      <template #item.date="{ item }">
-        {{ getDocDate(item) }}
+      <template #item.outNumber="{ item }">
+        {{ item.fullOutNumber ? item.fullOutNumber : item.outNumber }}
       </template>
       <template #item.category="{ item }">
         {{ getDocType(item) }}
@@ -149,56 +145,6 @@ export default {
       // --------------------------------Общие-----------------------------------
       storage: this.$docs.buffer,
       rules: Rules,
-      headers: [
-        {
-          text: 'Номер документа',
-          align: 'left',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 180,
-          value: 'number'
-        },
-        {
-          text: 'Дата',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 120,
-          value: 'date'
-        },
-        {
-          text: 'Краткое содержание',
-          sortable: true,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 600,
-          value: 'subject'
-        },
-        {
-          text: 'Категория',
-          sortable: false,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 400,
-          value: 'category'
-        },
-        {
-          text: 'Состояние',
-          sortable: false,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          width: 200,
-          value: 'state'
-        },
-        {
-          text: 'Действия',
-          sortable: false,
-          class: 'font-weight-medium subtitle-1',
-          divider: true,
-          value: 'action'
-        }
-      ],
       editedIndex: -1,
       editedItem: {},
       lazy: false
@@ -231,6 +177,62 @@ export default {
       if (this.tableBody) {
         return this.tableBody.selectDep
       } else { return null }
+    },
+    headers () {
+      return [
+        {
+          text: 'Номер документа',
+          align: 'left',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 180,
+          value: this.type === 'personalInternal' || this.type === 'subdivisionInternal' || this.type === 'departmentInternal'
+            ? 'incNumber'
+            : 'outNumber'
+        },
+        {
+          text: 'Дата',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 120,
+          value: this.type === 'personalInternal' || this.type === 'subdivisionInternal' || this.type === 'departmentInternal'
+            ? 'incDate'
+            : 'outDate'
+        },
+        {
+          text: 'Краткое содержание',
+          sortable: true,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 600,
+          value: 'subject'
+        },
+        {
+          text: 'Категория',
+          sortable: false,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 400,
+          value: 'category'
+        },
+        {
+          text: 'Состояние',
+          sortable: false,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          width: 200,
+          value: 'state'
+        },
+        {
+          text: 'Действия',
+          sortable: false,
+          class: 'font-weight-medium subtitle-1',
+          divider: true,
+          value: 'action'
+        }
+      ]
     },
     currentPositionsOfCurrentUser () {
       const curPos = this.currentPositions.filter(el => el.EmployeeId === this.user.employee.id)
@@ -385,7 +387,7 @@ export default {
           class: ExtOutgoing,
           execs: 'addresseesId',
           componentName: 'ExtOut',
-          docNumber: item.prefix + item.outNumber,
+          docNumber: item.fullOutNumber,
           docDate: item.outDate
         }
       }
