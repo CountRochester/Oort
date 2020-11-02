@@ -20,7 +20,7 @@
       max-width="800px"
       @click:outside="closeNote"
     >
-      <v-card>
+      <v-card outlined>
         <v-card-title>
           <span class="headline">Примечания</span>
         </v-card-title>

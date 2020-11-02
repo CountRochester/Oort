@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-dialog v-model="viewDialog" max-width="1500px">
-      <v-card>
+      <v-card outlined>
         <v-card-title>
           <span class="headline">Просмотр данных внешненго входящего документа</span>
         </v-card-title>

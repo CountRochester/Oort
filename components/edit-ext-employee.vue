@@ -5,7 +5,7 @@
     @keydown.enter.prevent="save"
     @keydown.esc.prevent="close"
   >
-    <v-card>
+    <v-card outlined>
       <v-card-title>
         <span class="headline">{{ formTitle }}</span>
       </v-card-title>

@@ -42,7 +42,7 @@
       </div>
     </v-row>
     <v-dialog v-model="dialogIncNum" max-width="400px">
-      <v-card>
+      <v-card outlined>
         <v-card-title>
           <span class="headline">Входящий номер</span>
         </v-card-title>

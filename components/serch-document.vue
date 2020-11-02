@@ -23,7 +23,7 @@
       @keydown.enter.prevent="search"
       @keydown.esc.prevent="close"
     >
-      <v-card>
+      <v-card outlined>
         <v-card-title>Найти документ</v-card-title>
         <v-card-text>
           <v-row>

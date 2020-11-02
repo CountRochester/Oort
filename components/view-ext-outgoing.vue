@@ -5,7 +5,7 @@
       max-width="1000px"
       @click:outside="close"
     >
-      <v-card>
+      <v-card outlined>
         <v-card-title>
           <span class="headline">Просмотр данных внешненго исходящего документа</span>
         </v-card-title>

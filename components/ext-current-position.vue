@@ -55,7 +55,7 @@
       @keydown.enter.prevent="save"
       @keydown.esc.prevent="close"
     >
-      <v-card>
+      <v-card outlined>
         <v-form
           ref="form"
           v-model="valid"

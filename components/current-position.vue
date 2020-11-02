@@ -49,7 +49,7 @@
     </v-card>
     <!-- ------------------------------------------Добавление новых должностей------------------------------------- -->
     <v-dialog v-model="dialog" max-width="800px" @keydown.enter.prevent="save">
-      <v-card>
+      <v-card outlined>
         <v-form
           ref="form"
           v-model="valid"

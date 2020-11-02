@@ -6,7 +6,7 @@
     @keydown.enter.prevent="save"
     @keydown.esc.prevent="close"
   >
-    <v-card>
+    <v-card outlined>
       <v-card-title>
         <span class="headline">{{ formTitle }}</span>
       </v-card-title>
@@ -351,12 +351,6 @@ export default {
       let currentPositions = []
       if (this.storage.currentPositions.items.length &&
         this.storage.positions.items.length) {
-        // for (const item of this.storage.currentPositions.items) {
-        //   const pos = this.storage.positions.items.find(el => el.id === item.PositionId) || {}
-        //   if (pos.canSignExtDocs) {
-        //     currentPositions.push(item)
-        //   }
-        // }
         currentPositions = this.storage.currentPositions.items.filter(item => this.storage.positions.indexed[item.PositionId].canSignExtDocs)
       }
       return currentPositions
@@ -446,6 +440,9 @@ export default {
       if (this.editedItem.extDate) {
         this.extDate = dateConvert(this.extDate)
       }
+      this.outDate = this.editedItem.outDate
+        ? dateConvert(this.editedItem.outDate)
+        : new Date().toISOString().substr(0, 10)
       if (this.$refs.editState) {
         this.$refs.editState.prepareItemData(this.editedItem.id)
       }
