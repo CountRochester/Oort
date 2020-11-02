@@ -287,7 +287,8 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn :disabled="validSend" :color="theme.tables.buttonColor" text @click="send(editedItem.id)">
+        <!-- <v-btn :disabled="validSend" :color="theme.tables.buttonColor" text @click="send(editedItem.id)"> -->
+        <v-btn :disabled="true" :color="theme.tables.buttonColor" text @click="send(editedItem.id)">
           Отправить
         </v-btn>
         <v-btn :disabled="busy" :color="theme.tables.buttonColor" text @click="close">

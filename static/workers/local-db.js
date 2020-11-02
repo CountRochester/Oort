@@ -359,6 +359,8 @@ self.onmessage = async ({ data }) => {
     const result = { id: data.id, payload: 'OK' }
     self.postMessage(result)
   } else if (data.payload.fun === 'fetchById') {
+    console.log('Called fetchById')
+    console.log('data.payload:', data.payload)
     const item = await getElementsById(data.payload.storage, data.payload.par)
     await store[data.payload.storage].add(item)
     const result = { id: data.id, payload: item }

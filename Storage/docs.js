@@ -36,7 +36,7 @@ const Docs = (function () {
     const context = clientContext
     const workerDB = process.browser ? new Worker('./workers/local-db.js') : {}
     const localDB = new WorkerWrapper(workerDB)
-    const funArray = ['add', 'delete', 'purge', 'count', 'getAll', 'getById']
+    const funArray = ['add', 'delete', 'purge', 'count', 'getAll', 'getById', 'fetchById']
     const storageInit = async function () {
       const storageZ = {}
       await localDB.execute('init')
@@ -232,6 +232,7 @@ const Docs = (function () {
               const baseIn = element.toJSON ? element.toJSON() : element
               await storage[ent.entitity].add(baseIn)
             } catch (err) {
+              console.error(err)
               messenger.addMessage({
                 funcType: `${ent.entitity}.add`,
                 result: 'error',
@@ -468,6 +469,8 @@ const Docs = (function () {
           return errors || undefined
         },
         async fetchById (id) {
+          console.log('Called fetchById from Docs')
+          console.log('id:', id)
           const existedItem = this.items.find(el => el.id === id)
           const prevItem = existedItem ? existedItem.clone() : null
           try {

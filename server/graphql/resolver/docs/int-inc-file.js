@@ -391,7 +391,7 @@ module.exports = {
                 }
               }
               // создание файла внутреннего входящего документа
-              const fileMes = await this.addIntIncFile(req)
+              const fileMes = await this.addIntIncFile(null, req)
               const newFile = await Docs.IntIncFile.findByPk(fileMes.id)
               if (fileMes.messageType === 'error') {
                 message.text += fileMes.text
