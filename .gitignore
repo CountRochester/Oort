@@ -97,3 +97,7 @@ static/file-storage
 
 # windows server config file
 web.config
+
+# path for development builds
+
+.output
